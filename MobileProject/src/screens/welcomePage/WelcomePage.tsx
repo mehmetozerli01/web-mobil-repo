@@ -3,8 +3,8 @@ import { style } from './style'
 import { useState } from 'react'
 
 const WelcomePage = () => {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   return (
     <View style={style.container}>
       <Text style={style.title}>Giriş Yap</Text>
