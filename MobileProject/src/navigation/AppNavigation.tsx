@@ -5,9 +5,9 @@ import { AppNavigationPropsType } from './AppNavigationPropsType'
 import { NavigationContainer } from '@react-navigation/native';
 import HomePage from '../screens/homePage/HomePage';
 import ProfilePage from '../screens/profilePage/ProfilePage';
-import WelcomePage from '../screens/welcomePage/WelcomePage';
 import SignupPage from '../screens/signupPage/SignupPage';
 import useAuth from '../hooks/useAuth';
+import WelcomePage from '../screens/welcomePage/welcomePage';
 
 
 const Stack = createNativeStackNavigator<AppNavigationPropsType>();
@@ -21,7 +21,7 @@ const AppNavigation: React.FC = () => {
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Home'>
           
-          
+        <Stack.Screen name='Profile' component={ProfilePage} />
           <Stack.Screen name='Home' component={HomePage} />
           
   
@@ -34,10 +34,11 @@ const AppNavigation: React.FC = () => {
     return (
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Welcome'>
-          <Stack.Screen name='Welcome' component={WelcomePage} />
-          <Stack.Screen name='Signup' component={SignupPage} />
+          <Stack.Screen name='Welcome' component={WelcomePage} options={{headerShown: false}}/> 
+          <Stack.Screen name='Signup' component={SignupPage} options={{headerShown: false}}/>
+          <Stack.Screen name='Home' component={HomePage} options={{headerShown: false}}/>
           
-          <Stack.Screen name='Profile' component={ProfilePage} />
+          <Stack.Screen name='Profile' component={ProfilePage} options={{headerShown: false}}/>
   
         </Stack.Navigator>
   
@@ -48,10 +49,10 @@ const AppNavigation: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Welcome'>
-        <Stack.Screen name='Welcome' component={WelcomePage} />
-        <Stack.Screen name='Signup' component={SignupPage} />
-        <Stack.Screen name='Home' component={HomePage} />
-        <Stack.Screen name='Profile' component={ProfilePage} />
+        <Stack.Screen name='Welcome' component={WelcomePage} options={{headerShown: false}}/>
+        <Stack.Screen name='Signup' component={SignupPage} options={{headerShown: false}}/>
+        <Stack.Screen name='Home' component={HomePage} options={{headerShown: false}}/>
+        {/* <Stack.Screen name='Profile' component={ProfilePage} /> */}
 
       </Stack.Navigator>
 

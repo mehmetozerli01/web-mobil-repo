@@ -3,46 +3,42 @@ import { StyleSheet } from "react-native";
 export const style = StyleSheet.create({
     container:{
         flex:1,
-        backgroundColor:'#f2f2',
-        alignItems:'center',
+        backgroundColor:'#FFFFFF',
+        padding:20,
         justifyContent:'center',
-        paddingHorizontal:30,
     },
     title:{
         fontSize:32,
         fontWeight:'bold',
-        color:'#333',
-        marginBottom:40,
+        color:'#333333',
+        marginBottom:30,
+        textAlign:'center',
     },
     input: {
-        width:'100%',
-        backgroundColor: '#fff',
-        padding: 15,
+        backgroundColor: '#F5F5F5',
         borderRadius: 10,
-        marginBottom: 20,
+        padding: 15,
+        marginBottom: 15,
         fontSize: 16,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#E0E0E0',
     },
     button: {
         backgroundColor: '#007AFF',
-        paddingVertical: 15,
-        paddingHorizontal: 60,
         borderRadius: 10,
+        padding: 15,
         alignItems: 'center',
         marginTop: 10,
     },
     buttonText: {
-        color: '#fff',
+        color: '#FFFFFF',
+        fontSize: 18,
         fontWeight: '600',
-        fontSize: 16,
-      },
-      forgotPassword: {
+    },
+    forgotPassword: {
         color: '#007AFF',
+        textAlign: 'center',
         marginTop: 20,
-        textDecorationLine: 'underline',
-      },
-
-
-
-})
+        fontSize: 16,
+    },
+});
