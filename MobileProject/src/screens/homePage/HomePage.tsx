@@ -1,121 +1,313 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
-import { style } from './style';
-import useAuth from '../../hooks/useAuth';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import cities from '../../assets/data/cities.json';
 
 const apiKey = "e4802f53135adaf9fe32403d35b6a3ed";
 
-const cities = [
-  { "name": "Adana", "lat": 37.0, "lon": 35.3213 },
-  { "name": "Adıyaman", "lat": 37.7648, "lon": 38.2786 },
-  { "name": "Afyonkarahisar", "lat": 38.7569, "lon": 30.5433 },
-  { "name": "Ağrı", "lat": 39.7191, "lon": 43.0503 },
-  { "name": "Amasya", "lat": 40.6499, "lon": 35.8353 },
-  { "name": "Ankara", "lat": 39.9208, "lon": 32.8541 },
-  { "name": "Antalya", "lat": 36.8841, "lon": 30.7056 },
-  { "name": "Artvin", "lat": 41.1828, "lon": 41.8183 },
-  { "name": "Aydın", "lat": 37.856, "lon": 27.8416 },
-  { "name": "Balıkesir", "lat": 39.6484, "lon": 27.8826 },
-  { "name": "Bilecik", "lat": 40.0567, "lon": 30.0665 },
-  { "name": "Bingöl", "lat": 38.8852, "lon": 40.4983 },
-  { "name": "Bitlis", "lat": 38.4015, "lon": 42.1078 },
-  { "name": "Bolu", "lat": 40.576, "lon": 31.5788 },
-  { "name": "Burdur", "lat": 37.7203, "lon": 30.2908 },
-  { "name": "Bursa", "lat": 40.1826, "lon": 29.0669 },
-  { "name": "Çanakkale", "lat": 40.1553, "lon": 26.4142 },
-  { "name": "Çankırı", "lat": 40.6013, "lon": 33.6134 },
-  { "name": "Çorum", "lat": 40.5506, "lon": 34.9556 },
-  { "name": "Denizli", "lat": 37.7765, "lon": 29.0864 },
-  { "name": "Diyarbakır", "lat": 37.9144, "lon": 40.2306 },
-  { "name": "Edirne", "lat": 41.6771, "lon": 26.5557 },
-  { "name": "Elazığ", "lat": 38.6749, "lon": 39.2232 },
-  { "name": "Erzincan", "lat": 39.7526, "lon": 39.4925 },
-  { "name": "Erzurum", "lat": 39.9052, "lon": 41.2659 },
-  { "name": "Eskişehir", "lat": 39.7767, "lon": 30.5206 },
-  { "name": "Gaziantep", "lat": 37.0662, "lon": 37.3833 },
-  { "name": "Giresun", "lat": 40.9175, "lon": 38.3927 },
-  { "name": "Gümüşhane", "lat": 40.4386, "lon": 39.5086 },
-  { "name": "Hakkari", "lat": 37.5833, "lon": 43.7333 },
-  { "name": "Hatay", "lat": 36.4018, "lon": 36.3498 },
-  { "name": "Isparta", "lat": 37.7648, "lon": 30.5566 },
-  { "name": "İstanbul", "lat": 41.0082, "lon": 28.9784 },
-  { "name": "İzmir", "lat": 38.4192, "lon": 27.1287 },
-  { "name": "Kars", "lat": 40.601, "lon": 43.0947 }
-];
-
 const HomePage = () => {
-  const { user } = useAuth();
-  const [selectedCity, setSelectedCity] = useState<any>(null);
+  const [selectedCity, setSelectedCity] = useState<any>(cities[0]);
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const fetchWeather = async () => {
-    if (!selectedCity) {
-      setError('Lütfen bir şehir seçin.');
-      return;
-    }
+    if (!selectedCity) return;
     setLoading(true);
     setError('');
-    setWeather(null);
     try {
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${selectedCity.lat}&lon=${selectedCity.lon}&appid=${apiKey}&units=metric&lang=tr`;
+      console.log('Fetching weather data from:', url);
+      
       const response = await fetch(url);
       const data = await response.json();
-      if (data.cod !== 200) {
-        setError('Hava durumu bilgisi alınamadı.');
-      } else {
+      
+      console.log('API Response:', data);
+      
+      if (response.ok) {
         setWeather(data);
+        console.log('Weather data set successfully:', data);
+      } else {
+        console.error('API Error:', data);
+        setError(`Hava durumu bilgisi alınamadı. Hata: ${data.message || 'Bilinmeyen hata'}`);
       }
     } catch (err) {
-      setError('Hava durumu bilgisi alınamadı.');
+      console.error('Fetch Error:', err);
+      setError('Bağlantı hatası: Lütfen internet bağlantınızı kontrol edin');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={style.container}>
-        <View style={style.header}>
-          <Text style={style.headerTitle}>Hoş Geldiniz</Text>
-          <Text style={style.headerSubtitle}>{user?.displayName || 'Kullanıcı'}</Text>
-        </View>
+  useEffect(() => {
+    if (selectedCity) {
+      console.log('Selected city changed:', selectedCity);
+      fetchWeather();
+    }
+  }, [selectedCity]);
 
-        <View style={{ marginVertical: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Şehir Seçin</Text>
-          <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, marginBottom: 10 }}>
-            <Picker
-              selectedValue={selectedCity ? selectedCity.name : ''}
-              onValueChange={(itemValue) => {
-                const city = cities.find((c) => c.name === itemValue);
-                setSelectedCity(city);
-              }}
-              style={{ width: '100%' }}
-            >
-              <Picker.Item label="Şehir seçin..." value="" />
-              {cities.map((city) => (
-                <Picker.Item key={city.name} label={city.name} value={city.name} />
-              ))}
-            </Picker>
-          </View>
-          <TouchableOpacity style={style.button} onPress={fetchWeather}>
-            <Text style={style.buttonText}>Hava Durumunu Getir</Text>
-          </TouchableOpacity>
-          {loading && <ActivityIndicator size="large" color="#007AFF" />}
-          {error ? <Text style={{ color: 'red', marginTop: 10 }}>{error}</Text> : null}
+  return (
+    <View style={styles.page}>
+      <View style={styles.card}>
+        {/* Şehir ve Hava Durumu Başlığı */}
+        <View style={styles.weatherHeader}>
+          <Text style={styles.city}>{selectedCity?.name}</Text>
           {weather && (
-            <View style={{ marginTop: 20, padding: 20, backgroundColor: '#F5F5F5', borderRadius: 10 }}>
-              <Text style={{ fontSize: 18 }}>Şehir: {weather.name}</Text>
-              <Text style={{ fontSize: 18 }}>Sıcaklık: {weather.main.temp}°C</Text>
-              <Text style={{ fontSize: 18 }}>Hissedilen: {weather.main.feels_like}°C</Text>
-              <Text style={{ fontSize: 18 }}>Durum: {weather.weather[0].description}</Text>
-            </View>
+            <Text style={styles.temperature}>
+              {Math.round(weather.main.temp)}°C{' '}
+              <Text style={styles.weatherDesc}>{weather.weather[0].description}</Text>
+            </Text>
           )}
         </View>
+
+        {/* Şehir Seçici */}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedCity?.name}
+            onValueChange={(itemValue: string) => {
+              const city = cities.find((c) => c.name === itemValue);
+              setSelectedCity(city);
+            }}
+            style={styles.picker}
+          >
+            {cities.map((city) => (
+              <Picker.Item key={city.name} label={city.name} value={city.name} />
+            ))}
+          </Picker>
+        </View>
+
+        {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
+        {error && <Text style={styles.error}>{error}</Text>}
+
+        {/* Kombin Önerisi Bölümü */}
+        <View style={styles.outfitSection}>
+          <Text style={styles.sectionTitle}>Bugünkü Kombin Önerin</Text>
+          
+          <View style={styles.outfitContainer}>
+            {/* Üst Giyim */}
+            <View style={styles.outfitCategory}>
+              <Text style={styles.categoryTitle}>Üst Giyim</Text>
+              <View style={styles.categoryItems}>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.upperClothing]} />
+                  <Text style={styles.outfitLabel}>Tişört</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.upperClothing]} />
+                  <Text style={styles.outfitLabel}>Gömlek</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.upperClothing]} />
+                  <Text style={styles.outfitLabel}>Sweat</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.upperClothing]} />
+                  <Text style={styles.outfitLabel}>Mont</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Alt Giyim */}
+            <View style={styles.outfitCategory}>
+              <Text style={styles.categoryTitle}>Alt Giyim</Text>
+              <View style={styles.categoryItems}>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.lowerClothing]} />
+                  <Text style={styles.outfitLabel}>Şort</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.lowerClothing]} />
+                  <Text style={styles.outfitLabel}>Pantolon</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Ayakkabı */}
+            <View style={styles.outfitCategory}>
+              <Text style={styles.categoryTitle}>Ayakkabı</Text>
+              <View style={styles.categoryItems}>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.footwear]} />
+                  <Text style={styles.outfitLabel}>Spor Ayakkabı</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.footwear]} />
+                  <Text style={styles.outfitLabel}>Bot</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Aksesuarlar */}
+            <View style={styles.outfitCategory}>
+              <Text style={styles.categoryTitle}>Aksesuarlar</Text>
+              <View style={styles.categoryItems}>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Şapka</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Bere</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Atkı</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Eldiven</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Kravat</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Gözlük</Text>
+                </View>
+                <View style={styles.outfitItem}>
+                  <View style={[styles.placeholderImage, styles.accessory]} />
+                  <Text style={styles.outfitLabel}>Saat</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Başka Kombin Öner</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: '#eaf6fb',
+    padding: 16,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  weatherHeader: {
+    marginBottom: 20,
+  },
+  city: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#234',
+    marginBottom: 8,
+  },
+  temperature: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#234',
+  },
+  weatherDesc: {
+    fontSize: 20,
+    color: '#666',
+  },
+  pickerContainer: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  picker: {
+    height: 50,
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+  outfitSection: {
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#234',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  outfitContainer: {
+    marginBottom: 20,
+  },
+  outfitCategory: {
+    marginBottom: 24,
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#234',
+    marginBottom: 12,
+    paddingLeft: 4,
+  },
+  categoryItems: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 12,
+  },
+  outfitItem: {
+    alignItems: 'center',
+    width: '30%',
+    marginBottom: 16,
+  },
+  placeholderImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  upperClothing: {
+    backgroundColor: '#FFE5E5',
+  },
+  lowerClothing: {
+    backgroundColor: '#E5E5FF',
+  },
+  footwear: {
+    backgroundColor: '#E5FFE5',
+  },
+  accessory: {
+    backgroundColor: '#FFE5FF',
+    width: 60,
+    height: 60,
+  },
+  outfitLabel: {
+    fontSize: 14,
+    color: '#234',
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#ff7e4a',
+    borderRadius: 12,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});
 
 export default HomePage;
