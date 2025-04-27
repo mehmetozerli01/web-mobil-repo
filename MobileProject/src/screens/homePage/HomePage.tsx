@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import cities from '../../assets/data/cities.json';
 
@@ -10,6 +10,47 @@ const HomePage = () => {
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPicker, setShowPicker] = useState(false);
+
+  // Hava durumuna göre renk şeması
+  const getColorScheme = (temp: number) => {
+    if (temp >= 25) {
+      return {
+        background: '#FFF9C4', // Sıcak hava - Açık sarı
+        card: '#FFE082', // Sıcak hava - Turuncu-sarı
+        text: '#FF6F00', // Sıcak hava - Koyu turuncu
+        accent: '#FFB300', // Sıcak hava - Altın sarısı
+        upperClothing: '#FFECB3', // Sıcak hava - Açık sarı
+        lowerClothing: '#FFE0B2', // Sıcak hava - Açık turuncu
+        footwear: '#FFCC80', // Sıcak hava - Turuncu
+        accessory: '#FFE57F', // Sıcak hava - Sarı
+      };
+    } else if (temp >= 15) {
+      return {
+        background: '#E3F2FD', // Ilıman hava - Açık mavi
+        card: '#BBDEFB', // Ilıman hava - Mavi
+        text: '#1976D2', // Ilıman hava - Koyu mavi
+        accent: '#2196F3', // Ilıman hava - Mavi
+        upperClothing: '#B3E5FC', // Ilıman hava - Açık mavi
+        lowerClothing: '#81D4FA', // Ilıman hava - Mavi
+        footwear: '#4FC3F7', // Ilıman hava - Mavi
+        accessory: '#29B6F6', // Ilıman hava - Mavi
+      };
+    } else {
+      return {
+        background: '#E8F5E9', // Soğuk hava - Açık yeşil
+        card: '#C8E6C9', // Soğuk hava - Yeşil
+        text: '#2E7D32', // Soğuk hava - Koyu yeşil
+        accent: '#43A047', // Soğuk hava - Yeşil
+        upperClothing: '#A5D6A7', // Soğuk hava - Açık yeşil
+        lowerClothing: '#81C784', // Soğuk hava - Yeşil
+        footwear: '#66BB6A', // Soğuk hava - Yeşil
+        accessory: '#4CAF50', // Soğuk hava - Yeşil
+      };
+    }
+  };
+
+  const colorScheme = weather ? getColorScheme(weather.main.temp) : getColorScheme(20);
 
   const fetchWeather = async () => {
     if (!selectedCity) return;
@@ -17,22 +58,14 @@ const HomePage = () => {
     setError('');
     try {
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${selectedCity.lat}&lon=${selectedCity.lon}&appid=${apiKey}&units=metric&lang=tr`;
-      console.log('Fetching weather data from:', url);
-      
       const response = await fetch(url);
       const data = await response.json();
-      
-      console.log('API Response:', data);
-      
       if (response.ok) {
         setWeather(data);
-        console.log('Weather data set successfully:', data);
       } else {
-        console.error('API Error:', data);
         setError(`Hava durumu bilgisi alınamadı. Hata: ${data.message || 'Bilinmeyen hata'}`);
       }
     } catch (err) {
-      console.error('Fetch Error:', err);
       setError('Bağlantı hatası: Lütfen internet bağlantınızı kontrol edin');
     } finally {
       setLoading(false);
@@ -41,139 +74,161 @@ const HomePage = () => {
 
   useEffect(() => {
     if (selectedCity) {
-      console.log('Selected city changed:', selectedCity);
       fetchWeather();
     }
   }, [selectedCity]);
 
   return (
-    <View style={styles.page}>
-      <View style={styles.card}>
+    <View style={[styles.page, { backgroundColor: colorScheme.background }]}>
+      <View style={[styles.card, { backgroundColor: colorScheme.card }]}>
         {/* Şehir ve Hava Durumu Başlığı */}
         <View style={styles.weatherHeader}>
-          <Text style={styles.city}>{selectedCity?.name}</Text>
+          <TouchableOpacity onPress={() => setShowPicker(true)}>
+            <Text style={[styles.city, { color: colorScheme.text }]}>{selectedCity?.name}</Text>
+          </TouchableOpacity>
           {weather && (
-            <Text style={styles.temperature}>
+            <Text style={[styles.temperature, { color: colorScheme.text }]}>
               {Math.round(weather.main.temp)}°C{' '}
-              <Text style={styles.weatherDesc}>{weather.weather[0].description}</Text>
+              <Text style={[styles.weatherDesc, { color: colorScheme.text }]}>
+                {weather.weather[0].description}
+              </Text>
             </Text>
           )}
         </View>
 
-        {/* Şehir Seçici */}
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedCity?.name}
-            onValueChange={(itemValue: string) => {
-              const city = cities.find((c) => c.name === itemValue);
-              setSelectedCity(city);
-            }}
-            style={styles.picker}
-          >
-            {cities.map((city) => (
-              <Picker.Item key={city.name} label={city.name} value={city.name} />
-            ))}
-          </Picker>
-        </View>
+        {/* Şehir Seçici Modal */}
+        <Modal
+          visible={showPicker}
+          transparent={true}
+          animationType="slide"
+        >
+          <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={[styles.modalContent, { backgroundColor: colorScheme.card }]}>
+                <View style={styles.pickerHeader}>
+                  <Text style={[styles.pickerTitle, { color: colorScheme.text }]}>Şehir Seçin</Text>
+                  <TouchableOpacity onPress={() => setShowPicker(false)}>
+                    <Text style={[styles.closeButton, { color: colorScheme.text }]}>Kapat</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedCity?.name}
+                    onValueChange={(itemValue: string) => {
+                      const city = cities.find((c) => c.name === itemValue);
+                      setSelectedCity(city);
+                      setShowPicker(false);
+                    }}
+                    style={[styles.pickerStyle, { color: colorScheme.text }]}
+                  >
+                    {cities.map((city) => (
+                      <Picker.Item key={city.name} label={city.name} value={city.name} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
 
-        {loading && <ActivityIndicator size="large" color="#007AFF" style={styles.loader} />}
-        {error && <Text style={styles.error}>{error}</Text>}
+        {loading && <ActivityIndicator size="large" color={colorScheme.accent} style={styles.loader} />}
+        {error && <Text style={[styles.error, { color: colorScheme.text }]}>{error}</Text>}
 
         {/* Kombin Önerisi Bölümü */}
         <View style={styles.outfitSection}>
-          <Text style={styles.sectionTitle}>Bugünkü Kombin Önerin</Text>
+          <Text style={[styles.sectionTitle, { color: colorScheme.text }]}>Bugünkü Kombin Önerin</Text>
           
           <View style={styles.outfitContainer}>
             {/* Üst Giyim */}
             <View style={styles.outfitCategory}>
-              <Text style={styles.categoryTitle}>Üst Giyim</Text>
+              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Üst Giyim</Text>
               <View style={styles.categoryItems}>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.upperClothing]} />
-                  <Text style={styles.outfitLabel}>Tişört</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Tişört</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.upperClothing]} />
-                  <Text style={styles.outfitLabel}>Gömlek</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Gömlek</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.upperClothing]} />
-                  <Text style={styles.outfitLabel}>Sweat</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Sweat</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.upperClothing]} />
-                  <Text style={styles.outfitLabel}>Mont</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Mont</Text>
                 </View>
               </View>
             </View>
 
             {/* Alt Giyim */}
             <View style={styles.outfitCategory}>
-              <Text style={styles.categoryTitle}>Alt Giyim</Text>
+              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Alt Giyim</Text>
               <View style={styles.categoryItems}>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.lowerClothing]} />
-                  <Text style={styles.outfitLabel}>Şort</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.lowerClothing }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Şort</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.lowerClothing]} />
-                  <Text style={styles.outfitLabel}>Pantolon</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.lowerClothing }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Pantolon</Text>
                 </View>
               </View>
             </View>
 
             {/* Ayakkabı */}
             <View style={styles.outfitCategory}>
-              <Text style={styles.categoryTitle}>Ayakkabı</Text>
+              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Ayakkabı</Text>
               <View style={styles.categoryItems}>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.footwear]} />
-                  <Text style={styles.outfitLabel}>Spor Ayakkabı</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.footwear }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Spor Ayakkabı</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.footwear]} />
-                  <Text style={styles.outfitLabel}>Bot</Text>
+                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.footwear }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Bot</Text>
                 </View>
               </View>
             </View>
 
             {/* Aksesuarlar */}
             <View style={styles.outfitCategory}>
-              <Text style={styles.categoryTitle}>Aksesuarlar</Text>
+              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Aksesuarlar</Text>
               <View style={styles.categoryItems}>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Şapka</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Şapka</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Bere</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Bere</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Atkı</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Atkı</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Eldiven</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Eldiven</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Kravat</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Kravat</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Gözlük</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Gözlük</Text>
                 </View>
                 <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory]} />
-                  <Text style={styles.outfitLabel}>Saat</Text>
+                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
+                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Saat</Text>
                 </View>
               </View>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={[styles.button, { backgroundColor: colorScheme.accent }]}>
             <Text style={styles.buttonText}>Başka Kombin Öner</Text>
           </TouchableOpacity>
         </View>
@@ -185,11 +240,9 @@ const HomePage = () => {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#eaf6fb',
     padding: 16,
   },
   card: {
-    backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
@@ -204,31 +257,49 @@ const styles = StyleSheet.create({
   city: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#234',
     marginBottom: 8,
   },
   temperature: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#234',
   },
   weatherDesc: {
     fontSize: 20,
-    color: '#666',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    fontSize: 16,
+    padding: 5,
   },
   pickerContainer: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    marginBottom: 20,
+    height: 200,
   },
-  picker: {
-    height: 50,
+  pickerStyle: {
+    height: 200,
   },
   loader: {
     marginVertical: 20,
   },
   error: {
-    color: 'red',
     textAlign: 'center',
     marginVertical: 10,
   },
@@ -238,7 +309,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#234',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -251,7 +321,6 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#234',
     marginBottom: 12,
     paddingLeft: 4,
   },
@@ -277,27 +346,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  upperClothing: {
-    backgroundColor: '#FFE5E5',
-  },
-  lowerClothing: {
-    backgroundColor: '#E5E5FF',
-  },
-  footwear: {
-    backgroundColor: '#E5FFE5',
-  },
   accessory: {
-    backgroundColor: '#FFE5FF',
     width: 60,
     height: 60,
   },
   outfitLabel: {
     fontSize: 14,
-    color: '#234',
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#ff7e4a',
     borderRadius: 12,
     padding: 15,
     alignItems: 'center',

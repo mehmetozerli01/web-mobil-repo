@@ -21,8 +21,8 @@ const AppNavigation: React.FC = () => {
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Home'>
           
-        <Stack.Screen name='Profile' component={ProfilePage} />
-          <Stack.Screen name='Home' component={HomePage} />
+        <Stack.Screen name='Profile' component={ProfilePage} options={{headerShown: false}}/>
+          <Stack.Screen name='Home' component={HomePage} options={{headerShown: false}}/>
           
   
         </Stack.Navigator>
