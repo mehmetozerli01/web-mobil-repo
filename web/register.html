@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style Storm - Üye Ol</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2563eb 0%, #ff9800 100%);
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 0.5s;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            color: #2563eb;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .auth-btn {
+            background: linear-gradient(90deg, #2563eb, #ff9800);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+        }
+
+        .auth-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-home:hover {
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 2rem;
+            }
+
+            .back-home {
+                top: 1rem;
+                left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home">
+        <i class="fas fa-arrow-left"></i>
+        Ana Sayfa
+    </a>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Üye Ol</h1>
+                <p>Style Storm'a katılın!</p>
+            </div>
+
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" placeholder="Ad Soyad" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="E-posta" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Şifre" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Şifre Tekrar" required>
+                </div>
+
+                <div id="registerMessage" class="auth-message"></div>
+                <button type="submit" class="auth-btn">Üye Ol</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Zaten üye misiniz? <a href="login.html">Giriş Yap</a></p>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { auth } from './assets/javascript/firebase.js';
+        import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+
+        const form = document.getElementById('registerForm');
+        const msg = document.getElementById('registerMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputs = form.querySelectorAll('input');
+            const email = inputs[1].value;
+            const password = inputs[2].value;
+            const passwordRepeat = inputs[3].value;
+
+            if (password !== passwordRepeat) {
+                msg.textContent = 'Şifreler eşleşmiyor.';
+                msg.style.color = 'red';
+                return;
+            }
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                msg.textContent = 'Kayıt başarılı! Giriş yapabilirsiniz.';
+                msg.style.color = 'green';
+                setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+            } catch (err) {
+                msg.textContent = 'Kayıt başarısız: ' + err.message;
+                msg.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html> 

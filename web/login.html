@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style Storm - Giriş Yap</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2563eb 0%, #ff9800 100%);
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 0.5s;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            color: #2563eb;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .auth-btn {
+            background: linear-gradient(90deg, #2563eb, #ff9800);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+        }
+
+        .auth-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-home:hover {
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 2rem;
+            }
+
+            .back-home {
+                top: 1rem;
+                left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home">
+        <i class="fas fa-arrow-left"></i>
+        Ana Sayfa
+    </a>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Giriş Yap</h1>
+                <p>Style Storm'a hoş geldiniz!</p>
+            </div>
+
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="E-posta" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Şifre" required>
+                </div>
+
+                <div id="loginMessage" class="auth-message"></div>
+                <button type="submit" class="auth-btn">Giriş Yap</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Hesabınız yok mu? <a href="register.html">Üye Ol</a></p>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { auth } from './assets/javascript/firebase.js';
+        import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+
+        const form = document.getElementById('loginForm');
+        const msg = document.getElementById('loginMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msg.textContent = 'Giriş yapılıyor...';
+            msg.style.color = 'black';
+            msg.className = 'auth-message';
+
+            const email = form.querySelector('input[type="email"]').value;
+            const password = form.querySelector('input[type="password"]').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                msg.textContent = 'Giriş başarılı! Yönlendiriliyorsunuz...';
+                msg.style.color = 'green';
+                msg.className = 'auth-message success';
+                
+                // Kullanıcı bilgilerini localStorage'a kaydet
+                localStorage.setItem('user', JSON.stringify({
+                    email: user.email,
+                    uid: user.uid
+                }));
+
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            } catch (err) {
+                console.error('Firebase Auth Error:', err);
+                let errorMessage = 'Giriş başarısız: ';
+                
+                switch (err.code) {
+                    case 'auth/invalid-email':
+                        errorMessage += 'Geçersiz e-posta adresi.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage += 'Bu hesap devre dışı bırakılmış.';
+                        break;
+                    case 'auth/user-not-found':
+                        errorMessage += 'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage += 'Hatalı şifre.';
+                        break;
+                    default:
+                        errorMessage += err.message;
+                }
+                
+                msg.textContent = errorMessage;
+                msg.style.color = 'red';
+                msg.className = 'auth-message error';
+            }
+        });
+
+        // Firebase connection check
+        if (!auth) {
+            msg.textContent = 'Firebase bağlantısı kurulamadı!';
+            msg.style.color = 'red';
+            msg.className = 'auth-message error';
+        }
+    </script>
+</body>
+</html>

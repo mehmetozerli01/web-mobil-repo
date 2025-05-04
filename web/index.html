@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hava Durumu ve Kombin Önerisi</title>
-    <link rel="stylesheet" href="assets/css/style.css"> <!-- CSS dosyasını ekledim -->
+    <title>Style Storm - Hava Durumu ve Kombin Önerisi</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script defer src="assets/javascript/main.js"></script>
 </head>
 
@@ -13,53 +14,293 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-container">
-            <a href="#" class="navbar-logo">Hava Durumu</a>
+            <a href="#" class="navbar-logo">
+                <div class="navbar-wheel">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-cloud-rain"></i>
+                    <i class="fas fa-snowflake"></i>
+                    <i class="fas fa-tshirt"></i>
+                </div>
+                Style Storm
+            </a>
             <ul class="navbar-links">
                 <li><a href="#home">Ana Sayfa</a></li>
+                <li><a href="#outfit">Kombin Önerisi</a></li>
+                <li><a href="#weather">Hava Durumu</a></li>
+                <li><a href="#blog">Blog</a></li>
                 <li><a href="#about">Hakkımızda</a></li>
-                <li><a href="#contact">İletişim</a></li>
             </ul>
+            <div class="auth-buttons">
+                <a href="login.html" class="login-btn">Giriş Yap</a>
+                <a href="register.html" class="register-btn">Üye Ol</a>
+            </div>
         </div>
     </nav>
 
     <!-- Ana Sayfa İçeriği -->
-    <section id="home" class="container">
-        <header>
-            <h1>Hava Durumu ve Kombin Önerisi</h1>
-        </header>
-        <div class="content">
-            <section class="weather-form">
-                <label for="citySelect">Şehir Seçin:</label>
-                <select id="citySelect" class="city-select"></select>
-                <button onclick="fetchWeather()" class="fetch-button">Hava Durumunu Getir</button>
-            </section>
-            <section class="weather-info">
-                <p id="weather">Hava durumu bilgileri burada görüntülenecek.</p>
-            </section>
+    <section id="home" class="landing-section">
+        <div class="landing-grid">
+            <!-- Sol: Hava Durumu Kartı -->
+            <div class="landing-weather-card">
+                <form id="landingWeatherForm" class="landing-weather-form">
+                    <select id="landingCitySelect" class="city-select"></select>
+                    <button type="submit" class="fetch-button">Güncelle</button>
+                </form>
+                <div class="weather-visual">
+                    <i class="fas fa-cloud-sun weather-main-icon" id="landingWeatherIcon"></i>
+                </div>
+                <div class="weather-degree" id="landingTemperature">--°</div>
+                <div class="weather-city" id="landingCityName">Şehir</div>
+                <div class="weather-desc" id="landingWeatherDescription">Hava durumu</div>
+                <div id="landingWeatherError" class="weather-error-message"></div>
+            </div>
+            <!-- Sağ: Kombin Başlık ve Görsel -->
+            <div class="landing-outfit-card">
+                <h2 class="landing-title">Bugün Hangi Kombini Seçmeliyim?</h2>
+                <button class="landing-outfit-btn">Kombin Önerisi Al</button>
+                <div class="landing-outfit-visuals">
+                    <img src="assets/images/sapka.jpg" alt="Şapka" class="outfit-visual">
+                    <img src="assets/images/sweat.jpg" alt="Sweatshirt" class="outfit-visual">
+                    <img src="assets/images/pantolon.webp"Pantolon" class="outfit-visual">
+                    <img src="assets/images/ayakkabi.jpeg" alt="Ayakkabı" class="outfit-visual">
+                </div>
+            </div>
+        </div>
+        <!-- Alt Sekmeli Menü -->
+       
+    </section>
+
+    <!-- Hava Durumu Bölümü (Modern) -->
+    <section id="weather" class="weather-section">
+        <div class="container">
+            <div class="weather-fashion-container">
+                <!-- Hava Durumu Kartı -->
+                <div class="weather-card">
+                    <div class="weather-header">
+                        <i class="fas fa-cloud-sun"></i>
+                        <h2>Hava Durumu</h2>
+                    </div>
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="temperature">
+                                <span class="temp-value">24°</span>
+                                <span class="temp-unit">C</span>
+                            </div>
+                            <div class="weather-info">
+                                <span class="weather-desc">Güneşli</span>
+                                <span class="location">İstanbul</span>
+                            </div>
+                        </div>
+                        <div class="weather-details">
+                            <div class="detail-item">
+                                <i class="fas fa-wind"></i>
+                                <span>12 km/s</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tint"></i>
+                                <span>45%</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-temperature-high"></i>
+                                <span>26°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moda İpuçları Kartı -->
+                <div class="fashion-card">
+                    <div class="fashion-header">
+                        <i class="fas fa-tshirt"></i>
+                        <h2>Moda İpuçları</h2>
+                    </div>
+                    <div class="fashion-content">
+                        <div class="fashion-tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <p>Bugün için hafif ve nefes alan kumaşlar tercih edin.</p>
+                        </div>
+                        <div class="fashion-tip">
+                            <i class="fas fa-umbrella"></i>
+                            <p>Yağmur ihtimaline karşı şık bir yağmurluk yanınızda bulunsun.</p>
+                        </div>
+                        <div class="fashion-tip">
+                            <i class="fas fa-sun"></i>
+                            <p>Güneş gözlüğü ve şapka kullanmayı unutmayın.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Kombin Önerisi Bölümü -->
+    <section id="outfit" class="outfit-section">
+        <div class="container">
+            <div class="outfit-cards-container">
+                <!-- Günlük Kombin Kartı -->
+                <div class="outfit-card">
+                    <div class="outfit-header">
+                        <i class="fas fa-tshirt"></i>
+                        <h2>Günlük Kombin</h2>
+                    </div>
+                    <div class="outfit-content">
+                        <div class="outfit-items">
+                            <div class="outfit-item">
+                                <img src="assets/images/hat.svg" alt="Şapka" class="outfit-image">
+                                <span>Şapka</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/hoodie.svg" alt="Sweatshirt" class="outfit-image">
+                                <span>Sweatshirt</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/jeans.svg" alt="Pantolon" class="outfit-image">
+                                <span>Pantolon</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/sneaker.svg" alt="Ayakkabı" class="outfit-image">
+                                <span>Spor Ayakkabı</span>
+                            </div>
+                        </div>
+                        <button class="outfit-btn">Bu Kombini Seç</button>
+                    </div>
+                </div>
+
+                <!-- Resmi Kombin Kartı -->
+                <div class="outfit-card">
+                    <div class="outfit-header">
+                        <i class="fas fa-user-tie"></i>
+                        <h2>Resmi Kombin</h2>
+                    </div>
+                    <div class="outfit-content">
+                        <div class="outfit-items">
+                            <div class="outfit-item">
+                                <img src="assets/images/hat.svg" alt="Şapka" class="outfit-image">
+                                <span>Şapka</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/hoodie.svg" alt="Sweatshirt" class="outfit-image">
+                                <span>Gömlek</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/jeans.svg" alt="Pantolon" class="outfit-image">
+                                <span>Kumaş Pantolon</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/sneaker.svg" alt="Ayakkabı" class="outfit-image">
+                                <span>Deri Ayakkabı</span>
+                            </div>
+                        </div>
+                        <button class="outfit-btn">Bu Kombini Seç</button>
+                    </div>
+                </div>
+
+                <!-- Spor Kombin Kartı -->
+                <div class="outfit-card">
+                    <div class="outfit-header">
+                        <i class="fas fa-running"></i>
+                        <h2>Spor Kombin</h2>
+                    </div>
+                    <div class="outfit-content">
+                        <div class="outfit-items">
+                            <div class="outfit-item">
+                                <img src="assets/images/hat.svg" alt="Şapka" class="outfit-image">
+                                <span>Şapka</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/hoodie.svg" alt="Sweatshirt" class="outfit-image">
+                                <span>Spor Tişört</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/jeans.svg" alt="Pantolon" class="outfit-image">
+                                <span>Eşofman</span>
+                            </div>
+                            <div class="outfit-item">
+                                <img src="assets/images/sneaker.svg" alt="Ayakkabı" class="outfit-image">
+                                <span>Spor Ayakkabı</span>
+                            </div>
+                        </div>
+                        <button class="outfit-btn">Bu Kombini Seç</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Hakkımızda -->
-    <section id="about" class="about-section">
-        <h2>Hakkımızda</h2>
-        <p>Biz, hava durumunu takip eden ve kıyafet önerileri sunan bir platformuz. Amacımız, hava koşullarına göre doğru kombin önerileri sunarak kullanıcıların her zaman rahat hissetmesini sağlamaktır.</p>
+    <!-- Blog Bölümü -->
+    <section id="blog" class="blog-section">
+        <div class="container">
+            <h2>Moda İpuçları ve Öneriler</h2>
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <img src="assets/images/blog1.jpg" alt="Blog Görseli">
+                    <div class="blog-content">
+                        <h3>Yaz Aylarında Şık Giyinmenin Püf Noktaları</h3>
+                        <p>Sıcak havalarda hem şık hem rahat nasıl giyinilir?</p>
+                        <a href="#" class="read-more">Devamını Oku</a>
+                    </div>
+                </article>
+                <!-- Diğer blog kartları -->
+            </div>
+        </div>
     </section>
 
-    <!-- İletişim -->
-    <section id="contact" class="contact-section">
-        <h2>İletişim</h2>
-        <p>Bizimle iletişime geçmek için aşağıdaki formu doldurun:</p>
-        <form id="contactForm">
-            <input type="text" placeholder="Adınız" required>
-            <input type="email" placeholder="E-posta" required>
-            <textarea placeholder="Mesajınızı buraya yazın" required></textarea>
-            <button type="submit">Gönder</button>
-        </form>
-    </section>
-
+    <!-- Footer -->
     <footer>
-        <p>&copy; 2025 Hava Durumu | Tüm hakları saklıdır.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Style Storm</h3>
+                <p>Hava durumuna göre kombin önerileri sunan moda platformu.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Hızlı Bağlantılar</h3>
+                <ul>
+                    <li><a href="#home">Ana Sayfa</a></li>
+                    <li><a href="#outfit">Kombin Önerisi</a></li>
+                    <li><a href="#weather">Hava Durumu</a></li>
+                    <li><a href="#blog">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>İletişim</h3>
+                <p>Email: info@stylestorm.com</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Style Storm | Tüm hakları saklıdır.</p>
+        </div>
     </footer>
+
+    <!-- Giriş/Kayıt Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login">Giriş Yap</button>
+                <button class="tab-btn" data-tab="register">Üye Ol</button>
+            </div>
+            <div class="tab-content">
+                <form id="loginForm" class="auth-form">
+                    <input type="email" placeholder="E-posta" required>
+                    <input type="password" placeholder="Şifre" required>
+                    <button type="submit">Giriş Yap</button>
+                </form>
+                <form id="registerForm" class="auth-form hidden">
+                    <input type="text" placeholder="Ad Soyad" required>
+                    <input type="email" placeholder="E-posta" required>
+                    <input type="password" placeholder="Şifre" required>
+                    <input type="password" placeholder="Şifre Tekrar" required>
+                    <button type="submit">Üye Ol</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
+
 
 </html>
