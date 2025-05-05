@@ -252,46 +252,197 @@ body {
     background-color: var(--white);
 }
 
+.blog-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 3rem;
+}
+
 .blog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .blog-card {
     background-color: var(--white);
-    border-radius: 10px;
+    border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .blog-card:hover {
     transform: translateY(-5px);
 }
 
-.blog-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
-
 .blog-content {
     padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-image {
+    padding: 1rem;
+    background-color: #f8fafc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.blog-image img {
+    max-width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
 }
 
 .blog-content h3 {
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    color: var(--primary);
+    font-size: 1.4rem;
+}
+
+.blog-content p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 1rem;
 }
 
 .read-more {
     display: inline-block;
-    margin-top: 1rem;
-    color: var(--accent-color);
+    color: var(--accent);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    margin-top: auto;
+}
+
+.read-more:hover {
+    color: var(--accent-dark);
+}
+
+/* Blog Fashion Tips */
+.blog-card .fashion-tips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.blog-card .fashion-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(248, 250, 252, 0.9);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+}
+
+.blog-card .fashion-tip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+}
+
+.blog-card .fashion-tip:hover::before {
+    opacity: 0.2;
+}
+
+.blog-card .fashion-tip:nth-child(1)::before {
+    background-image: url('../images/sapka.jpg');
+}
+
+.blog-card .fashion-tip:nth-child(2)::before {
+    background-image: url('../images/sweat.jpg');
+}
+
+.blog-card .fashion-tip:nth-child(3)::before {
+    background-image: url('../images/pantolon.webp');
+}
+
+.blog-card .fashion-tip:nth-child(4)::before {
+    background-image: url('../images/ayakkabi.jpeg');
+}
+
+.blog-card .fashion-tip:nth-child(5)::before {
+    background-image: url('../images/sapka.jpg');
+}
+
+.blog-card .fashion-tip:nth-child(6)::before {
+    background-image: url('../images/sweat.jpg');
+}
+
+.blog-card .fashion-tip:nth-child(7)::before {
+    background-image: url('../images/pantolon.webp');
+}
+
+.blog-card .fashion-tip:nth-child(8)::before {
+    background-image: url('../images/ayakkabi.jpeg');
+}
+
+.blog-card .fashion-tip:nth-child(9)::before {
+    background-image: url('../images/sapka.jpg');
+}
+
+.blog-card .fashion-tip:nth-child(10)::before {
+    background-image: url('../images/sweat.jpg');
+}
+
+.blog-card .fashion-tip i,
+.blog-card .fashion-tip p {
+    position: relative;
+    z-index: 1;
+}
+
+.blog-card .fashion-tip:hover {
+    transform: translateY(-3px);
+    background: rgba(241, 245, 249, 0.95);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+@media (max-width: 768px) {
+    .blog-section {
+        padding: 3rem 1rem;
+    }
+
+    .blog-section h2 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .blog-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .blog-image img {
+        max-height: 150px;
+    }
+
+    .blog-card .fashion-tips {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Footer */
@@ -1136,38 +1287,110 @@ footer {
     padding: 2.5rem;
 }
 
+.fashion-image {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.fashion-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.fashion-image img:hover {
+    transform: scale(1.02);
+}
+
+.fashion-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .fashion-tip {
     display: flex;
     align-items: flex-start;
     gap: 1.2rem;
     padding: 1.5rem;
-    margin-bottom: 1rem;
-    background: #f8fafc;
-    border-radius: 16px;
-    transition: transform 0.3s ease, background 0.3s ease;
+    background: rgba(248, 250, 252, 0.9);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
 }
 
-.fashion-tip:last-child {
-    margin-bottom: 0;
+.fashion-tip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+}
+
+.fashion-tip:hover::before {
+    opacity: 0.2;
+}
+
+.fashion-tip:nth-child(1)::before {
+    background-image: url('../images/sapka.jpg');
+}
+
+.fashion-tip:nth-child(2)::before {
+    background-image: url('../images/sweat.jpg');
+}
+
+.fashion-tip:nth-child(3)::before {
+    background-image: url('../images/pantolon.webp');
+}
+
+.fashion-tip:nth-child(4)::before {
+    background-image: url('../images/ayakkabi.jpeg');
+}
+
+.fashion-tip:nth-child(5)::before {
+    background-image: url('../images/sapka.jpg');
+}
+
+.fashion-tip:nth-child(6)::before {
+    background-image: url('../images/sweat.jpg');
+}
+
+.fashion-tip:nth-child(7)::before {
+    background-image: url('../images/pantolon.webp');
+}
+
+.fashion-tip:nth-child(8)::before {
+    background-image: url('../images/ayakkabi.jpeg');
+}
+
+.fashion-tip:nth-child(9)::before {
+    background-image: url('../images/sapka.jpg');
+}
+
+.fashion-tip:nth-child(10)::before {
+    background-image: url('../images/sweat.jpg');
+}
+
+.fashion-tip i,
+.fashion-tip p {
+    position: relative;
+    z-index: 1;
 }
 
 .fashion-tip:hover {
     transform: translateY(-3px);
-    background: #f1f5f9;
-}
-
-.fashion-tip i {
-    font-size: 1.4rem;
-    color: #ff9800;
-    filter: drop-shadow(0 2px 8px rgba(255,152,0,0.2));
-    margin-top: 0.2rem;
-}
-
-.fashion-tip p {
-    margin: 0;
-    color: #475569;
-    line-height: 1.6;
-    font-size: 1.05rem;
+    background: rgba(241, 245, 249, 0.95);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
 }
 
 @media (max-width: 768px) {
@@ -1190,7 +1413,396 @@ footer {
         grid-template-columns: repeat(3, 1fr);
     }
 
+    .fashion-content {
+        padding: 1.5rem;
+    }
+
+    .fashion-image {
+        margin-bottom: 1.5rem;
+    }
+
     .fashion-tip {
         padding: 1.2rem;
+    }
+}
+
+/* Kombin Önerisi Popup Styles */
+.outfit-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.outfit-popup-content {
+    position: relative;
+    background: white;
+    margin: 5% auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease;
+}
+
+.close-popup {
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+    font-size: 2rem;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-popup:hover {
+    color: #ff4444;
+}
+
+.outfit-popup h2 {
+    text-align: center;
+    color: #2563eb;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.outfit-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.outfit-item {
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.outfit-item:hover {
+    transform: translateY(-5px);
+}
+
+.outfit-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.outfit-item span {
+    display: block;
+    color: #333;
+    font-weight: 500;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .outfit-popup-content {
+        margin: 10% auto;
+        padding: 1.5rem;
+    }
+
+    .outfit-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .outfit-item img {
+        height: 100px;
+    }
+}
+
+/* Weather Form Styles */
+.weather-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.weather-form .city-select {
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    font-size: 1rem;
+    font-weight: 600;
+    background: #fff;
+    color: var(--primary-dark);
+    transition: all 0.3s ease;
+}
+
+.weather-form .city-select:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.weather-form .fetch-button {
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.weather-form .fetch-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.weather-error-message {
+    background: linear-gradient(90deg, #ff9800, #e53935);
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    margin: 1rem;
+    animation: pop 0.3s ease;
+}
+
+/* Weather Details Update */
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.detail-item {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    transform: translateY(-5px);
+    background: #f1f5f9;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.detail-item i {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 2px 8px rgba(37,99,235,0.2));
+}
+
+.detail-item span {
+    display: block;
+    font-size: 1.2rem;
+    color: #475569;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .weather-form {
+        flex-direction: column;
+        padding: 0 0.5rem;
+    }
+
+    .weather-form .fetch-button {
+        width: 100%;
+    }
+
+    .weather-details {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* About Section */
+.about-section {
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+}
+
+.about-content {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.about-content h2 {
+    text-align: center;
+    color: var(--primary);
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.about-content h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    margin: 1rem auto 0;
+    border-radius: 2px;
+}
+
+.about-text {
+    color: #475569;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.about-text p {
+    margin-bottom: 1.5rem;
+}
+
+.about-text p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .about-section {
+        padding: 3rem 1rem;
+    }
+
+    .about-content {
+        padding: 2rem;
+    }
+
+    .about-content h2 {
+        font-size: 2rem;
+    }
+
+    .about-text {
+        font-size: 1rem;
+    }
+}
+
+.mission-section {
+    margin-top: 3rem;
+    padding-top: 3rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.mission-section h3 {
+    color: var(--primary);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    position: relative;
+}
+
+.mission-section h3::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    margin: 1rem auto 0;
+    border-radius: 2px;
+}
+
+.mission-text {
+    color: #475569;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.mission-text p {
+    margin-bottom: 1.5rem;
+}
+
+.mission-text p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .mission-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+    }
+
+    .mission-section h3 {
+        font-size: 1.8rem;
+    }
+
+    .mission-text {
+        font-size: 1rem;
+    }
+}
+
+.vision-section {
+    margin-top: 3rem;
+    padding-top: 3rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.vision-section h3 {
+    color: var(--primary);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    position: relative;
+}
+
+.vision-section h3::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    margin: 1rem auto 0;
+    border-radius: 2px;
+}
+
+.vision-text {
+    color: #475569;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.vision-text p {
+    margin-bottom: 1.5rem;
+}
+
+.vision-text p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .vision-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+    }
+
+    .vision-section h3 {
+        font-size: 1.8rem;
+    }
+
+    .vision-text {
+        font-size: 1rem;
     }
 }

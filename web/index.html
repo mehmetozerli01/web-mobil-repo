@@ -61,13 +61,38 @@
                 <div class="landing-outfit-visuals">
                     <img src="assets/images/sapka.jpg" alt="Şapka" class="outfit-visual">
                     <img src="assets/images/sweat.jpg" alt="Sweatshirt" class="outfit-visual">
-                    <img src="assets/images/pantolon.webp"Pantolon" class="outfit-visual">
+                    <img src="assets/images/pantolon.webp" alt="Pantolon" class="outfit-visual">
                     <img src="assets/images/ayakkabi.jpeg" alt="Ayakkabı" class="outfit-visual">
                 </div>
             </div>
         </div>
+
+        <!-- Kombin Önerisi Popup -->
+        <div id="outfitPopup" class="outfit-popup">
+            <div class="outfit-popup-content">
+                <span class="close-popup">&times;</span>
+                <h2>Kombin Önerisi</h2>
+                <div class="outfit-items-grid">
+                    <div class="outfit-item">
+                        <img src="assets/images/sapka.jpg" alt="Şapka">
+                        <span>Şapka</span>
+                    </div>
+                    <div class="outfit-item">
+                        <img src="assets/images/sweat.jpg" alt="Sweatshirt">
+                        <span>Sweatshirt</span>
+                    </div>
+                    <div class="outfit-item">
+                        <img src="assets/images/pantolon.webp" alt="Pantolon">
+                        <span>Pantolon</span>
+                    </div>
+                    <div class="outfit-item">
+                        <img src="assets/images/ayakkabi.jpeg" alt="Ayakkabı">
+                        <span>Ayakkabı</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Alt Sekmeli Menü -->
-       
     </section>
 
     <!-- Hava Durumu Bölümü (Modern) -->
@@ -81,28 +106,36 @@
                         <h2>Hava Durumu</h2>
                     </div>
                     <div class="weather-content">
-                        <div class="weather-main">
-                            <div class="temperature">
-                                <span class="temp-value">24°</span>
-                                <span class="temp-unit">C</span>
+                        <form id="weatherForm" class="weather-form">
+                            <select id="citySelect" class="city-select" required>
+                                <option value="">Şehir Seçin</option>
+                            </select>
+                            <button type="submit" class="fetch-button">Güncelle</button>
+                        </form>
+                        <div id="weatherResult">
+                            <div class="weather-main">
+                                <div class="temperature">
+                                    <span class="temp-value">--°</span>
+                                    <span class="temp-unit">C</span>
+                                </div>
+                                <div class="weather-info">
+                                    <span class="weather-desc">Hava durumu</span>
+                                    <span class="location">Şehir</span>
+                                </div>
                             </div>
-                            <div class="weather-info">
-                                <span class="weather-desc">Güneşli</span>
-                                <span class="location">İstanbul</span>
-                            </div>
-                        </div>
-                        <div class="weather-details">
-                            <div class="detail-item">
-                                <i class="fas fa-wind"></i>
-                                <span>12 km/s</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-tint"></i>
-                                <span>45%</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-temperature-high"></i>
-                                <span>26°</span>
+                            <div class="weather-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-wind"></i>
+                                    <span>-- km/s</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-tint"></i>
+                                    <span>--%</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-temperature-high"></i>
+                                    <span>--°</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -115,17 +148,18 @@
                         <h2>Moda İpuçları</h2>
                     </div>
                     <div class="fashion-content">
-                        <div class="fashion-tip">
-                            <i class="fas fa-lightbulb"></i>
-                            <p>Bugün için hafif ve nefes alan kumaşlar tercih edin.</p>
+                        <div class="fashion-image">
+                            <img src="assets/images/moda ikonu.png" alt="Moda İkonu">
                         </div>
-                        <div class="fashion-tip">
-                            <i class="fas fa-umbrella"></i>
-                            <p>Yağmur ihtimaline karşı şık bir yağmurluk yanınızda bulunsun.</p>
-                        </div>
-                        <div class="fashion-tip">
-                            <i class="fas fa-sun"></i>
-                            <p>Güneş gözlüğü ve şapka kullanmayı unutmayın.</p>
+                        <div class="fashion-tips">
+                            <div class="fashion-tip">
+                                <i class="fas fa-lightbulb"></i>
+                                <p>Klasik bir görünüm için siyah bir elbise ve kırmızı ruj mükemmel bir seçimdir.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-gem"></i>
+                                <p>Kıyafetinize şıklık katmak için minimalist takılar tercih edin.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -233,14 +267,89 @@
             <h2>Moda İpuçları ve Öneriler</h2>
             <div class="blog-grid">
                 <article class="blog-card">
-                    <img src="assets/images/blog1.jpg" alt="Blog Görseli">
                     <div class="blog-content">
-                        <h3>Yaz Aylarında Şık Giyinmenin Püf Noktaları</h3>
-                        <p>Sıcak havalarda hem şık hem rahat nasıl giyinilir?</p>
-                        <a href="#" class="read-more">Devamını Oku</a>
+                        <h3>Moda İpuçları</h3>
+                        <div class="fashion-tips">
+                            <div class="fashion-tip">
+                                <i class="fas fa-lightbulb"></i>
+                                <p>Klasik bir görünüm için siyah bir elbise ve kırmızı ruj mükemmel bir seçimdir.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-gem"></i>
+                                <p>Kıyafetinize şıklık katmak için minimalist takılar tercih edin.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-palette"></i>
+                                <p>Farklı desenleri kombinlerken, dengeyi korumak önemli. Tek bir ögeyi ön plana çıkarın ve geri kalanını nötr tutun.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-tshirt"></i>
+                                <p>Yazın en rahat kombini: Beyaz tişört, kot şort ve sandalet!</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-user"></i>
+                                <p>Beden tipinize uygun giysiler giyerek hem rahat hem şık olabilirsiniz.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-paint-brush"></i>
+                                <p>Renk uyumu, şıklığın anahtarıdır. Renkli aksesuarlarla sade bir elbise kombinleyin.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-shopping-bag"></i>
+                                <p>Bir çanta, kombininizi tamamlayan en önemli detaydır. Bazen küçük bir çanta, tüm görünümü değiştirir.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-shoe-prints"></i>
+                                <p>Spor ayakkabılar sadece spor yaparken değil, günlük kombinlerde de kullanılabilir.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-leaf"></i>
+                                <p>Mevsime uygun renkler seçerek, kıyafetlerinizi sezonun ruhuna uygun hale getirebilirsiniz.</p>
+                            </div>
+                            <div class="fashion-tip">
+                                <i class="fas fa-vest"></i>
+                                <p>Gömlek ve blazer ceket kombinini, hem iş hayatınızda hem günlük yaşamda rahatça kullanabilirsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="blog-image">
+                        <img src="assets/images/moda ikonu.png" alt="Moda İkonu">
                     </div>
                 </article>
-                <!-- Diğer blog kartları -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Hakkımızda Bölümü -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-content">
+                <h2>Hakkımızda</h2>
+                <div class="about-text">
+                    <p>Style Storm, hava durumu verilerini kullanarak günlük hayatınız için en uygun kombinleri öneren yenilikçi bir platformdur. Amacımız, kullanıcılarımızın her gün, havanın nasıl olacağına göre şık ve rahat kombinler oluşturmasına yardımcı olmaktır. Yapay zeka destekli algoritmamız, mevcut hava durumu verilerini analiz ederek, kullanıcılara sadece pratik değil, aynı zamanda moda anlayışına hitap eden giyim önerileri sunar.</p>
+                    
+                    <p>Platformumuzda, hava durumunun ötesinde, kullanıcıların ruh haline ve kişisel tercihlerine göre de kombin önerileri alabilmeleri mümkündür. Günün hava koşullarını ve sizin stil tercihleriniz doğrultusunda, şıklığı ve rahatlığı bir araya getiren en uygun kıyafetleri seçmek hiç bu kadar kolay olmamıştı!</p>
+                    
+                    <p>Style Storm olarak, kullanıcı deneyimini her zaman ön planda tutuyor ve sürekli gelişen yapay zeka teknolojilerini kullanarak, giyim tarzınıza yön verecek öneriler sunmayı amaçlıyoruz. Bize katılın, her gün şık ve rahat kombinlerle stilinizi keşfedin!</p>
+                </div>
+
+                <div class="mission-section">
+                    <h3>Misyonumuz</h3>
+                    <div class="mission-text">
+                        <p>Style Storm olarak misyonumuz, kullanıcılarımıza günlük yaşamda stil sahibi ve rahat kombinler sunarak, hava durumu ve kişisel tercihlerine dayalı olarak en uygun giyim seçeneklerini sağlamak ve her an şıklığı kolaylaştırmaktır. Yapay zeka destekli önerilerimizle, kullanıcılarımızın moda dünyasında daha bilinçli seçimler yapmalarını ve her gün kendilerini rahat hissedecekleri şekilde giyinmelerini sağlıyoruz.</p>
+                        
+                        <p>Gelişen teknoloji ve modayı bir araya getirerek, her kullanıcıya özelleştirilmiş ve kişiselleştirilmiş kombin önerileri sunmayı hedefliyoruz. Böylece, her kullanıcımızın tarzını keşfetmesini ve stilini en verimli şekilde yansıtmasını sağlıyoruz.</p>
+                    </div>
+                </div>
+
+                <div class="vision-section">
+                    <h3>Vizyonumuz</h3>
+                    <div class="vision-text">
+                        <p>Style Storm olarak vizyonumuz, yapay zeka ve hava durumu verilerini en verimli şekilde entegre ederek, moda dünyasında devrim yaratmak ve kullanıcılarımıza daha önce hiç deneyimlemedikleri bir kombin öneri platformu sunmaktır. Gelecekte, sadece hava durumu değil, kullanıcıların tüm yaşam biçimlerine uyum sağlayan, daha dinamik ve entegre bir giyim öneri sistemi geliştirmeyi amaçlıyoruz.</p>
+                        
+                        <p>Yapay zeka teknolojisinin gücünü kullanarak, her kullanıcının stilini en üst düzeye çıkaracak, onların kendilerini özgür ve şık hissettikleri bir dünya yaratmayı hedefliyoruz. Global çapta tanınan, kullanıcı odaklı, yenilikçi ve trend belirleyici bir moda platformu olmak istiyoruz.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

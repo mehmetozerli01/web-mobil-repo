@@ -112,6 +112,13 @@ async function fetchWeather(event, isLanding = false) {
 
     const selectId = isLanding ? "landingCitySelect" : "citySelect";
     const citySelect = document.getElementById(selectId);
+    
+    if (!citySelect) {
+        console.error("City select element not found:", selectId);
+        return;
+    }
+
+    console.log("Selected city value:", citySelect.value);
     const selectedCity = JSON.parse(citySelect.value);
 
     if (!selectedCity) {
@@ -120,10 +127,12 @@ async function fetchWeather(event, isLanding = false) {
     }
 
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${selectedCity.lat}&lon=${selectedCity.lon}&appid=${apiKey}&units=metric&lang=tr`;
+    console.log("Fetching weather from URL:", url);
 
     try {
         const response = await fetch(url);
         const data = await response.json();
+        console.log("Weather data received:", data);
 
         if (isLanding) {
             // Ana sayfa hava durumu güncelleme
@@ -138,25 +147,50 @@ async function fetchWeather(event, isLanding = false) {
         } else {
             // Detaylı hava durumu bölümü güncelleme
             const weatherResult = document.getElementById("weatherResult");
-            weatherResult.innerHTML = `
-                <div class="weather-details">
-                    <p><strong>Şehir:</strong> ${data.name}</p>
-                    <p><strong>Sıcaklık:</strong> ${Math.round(data.main.temp)}°C</p>
-                    <p><strong>Hissedilen:</strong> ${Math.round(data.main.feels_like)}°C</p>
-                    <p><strong>Durum:</strong> ${data.weather[0].description}</p>
-                    <p><strong>Nem:</strong> ${data.main.humidity}%</p>
-                    <p><strong>Rüzgar:</strong> ${data.wind.speed} m/s</p>
-                </div>
-            `;
+            if (!weatherResult) {
+                console.error("Weather result element not found");
+                return;
+            }
+            
+            // Ana hava durumu bilgileri
+            const tempValue = weatherResult.querySelector('.temp-value');
+            const weatherDesc = weatherResult.querySelector('.weather-desc');
+            const location = weatherResult.querySelector('.location');
+            
+            if (tempValue && weatherDesc && location) {
+                tempValue.textContent = `${Math.round(data.main.temp)}°`;
+                weatherDesc.textContent = data.weather[0].description;
+                location.textContent = data.name;
+
+                // Detaylı bilgiler
+                const details = weatherResult.querySelectorAll('.detail-item span');
+                if (details.length >= 3) {
+                    details[0].textContent = `${data.wind.speed} km/s`; // Rüzgar hızı
+                    details[1].textContent = `${data.main.humidity}%`; // Nem
+                    details[2].textContent = `${Math.round(data.main.feels_like)}°`; // Hissedilen sıcaklık
+                }
+
+                // Hava durumuna göre ikon güncelleme
+                const weatherIcon = weatherResult.querySelector('.weather-header i');
+                if (weatherIcon) {
+                    const weatherCode = data.weather[0].id;
+                    updateWeatherIcon(weatherIcon, weatherCode);
+                }
+            } else {
+                console.error("Weather elements not found in weatherResult");
+            }
         }
     } catch (error) {
+        console.error("Weather fetch error:", error);
         const errorMessage = "Hava durumu bilgisi alınamadı.";
         if (isLanding) {
             document.getElementById("landingWeatherError").textContent = errorMessage;
         } else {
-            document.getElementById("weatherResult").textContent = errorMessage;
+            const weatherResult = document.getElementById("weatherResult");
+            if (weatherResult) {
+                weatherResult.innerHTML = `<div class="weather-error-message">${errorMessage}</div>`;
+            }
         }
-        console.error("Hata:", error);
     }
 }
 
@@ -198,6 +232,41 @@ window.onload = () => {
     // Detaylı hava durumu formu
     const weatherForm = document.getElementById("weatherForm");
     if (weatherForm) {
-        weatherForm.addEventListener("submit", (e) => fetchWeather(e, false));
+        console.log("Weather form found");
+        weatherForm.addEventListener("submit", (e) => {
+            console.log("Weather form submitted");
+            fetchWeather(e, false);
+        });
+        // Sayfa yüklendiğinde ilk şehir için hava durumunu getir
+        fetchWeather(null, false);
+    } else {
+        console.log("Weather form not found");
     }
 };
+
+// Kombin Önerisi Popup işlemleri
+document.addEventListener('DOMContentLoaded', function() {
+    const outfitBtn = document.querySelector('.landing-outfit-btn');
+    const outfitPopup = document.getElementById('outfitPopup');
+    const closePopup = document.querySelector('.close-popup');
+
+    // Popup'ı aç
+    outfitBtn.addEventListener('click', function() {
+        outfitPopup.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Sayfa kaydırmayı engelle
+    });
+
+    // Popup'ı kapat
+    closePopup.addEventListener('click', function() {
+        outfitPopup.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Sayfa kaydırmayı tekrar etkinleştir
+    });
+
+    // Popup dışına tıklandığında kapat
+    window.addEventListener('click', function(event) {
+        if (event.target === outfitPopup) {
+            outfitPopup.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+});
