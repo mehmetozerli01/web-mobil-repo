@@ -8,6 +8,205 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script defer src="assets/javascript/main.js"></script>
+    <script defer src="assets/javascript/clothes.js"></script>
+    <style>
+        .products-section {
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image-container {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: white;
+        }
+
+        .product-details {
+            padding: 15px;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .product-meta {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        /* Yeni eklenen stiller */
+        .clothes-section {
+            padding: 40px 0;
+            background-color: #f9f9f9;
+            margin-top: 40px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background-color: #fff;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background-color: #333;
+            color: white;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .product-image-container {
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .product-details {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .product-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .product-meta p {
+            margin: 5px 0;
+        }
+
+        .loading, .no-products {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .category-filters {
+                padding: 0 10px;
+            }
+            
+            .filter-btn {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+                padding: 10px;
+            }
+
+            .product-image-container {
+                height: 200px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -167,6 +366,24 @@
         </div>
     </section>
     
+    <!-- Kıyafetler Bölümü -->
+    <section id="clothes" class="clothes-section">
+        <div class="container">
+            <h2 class="section-title">Kıyafetlerimiz</h2>
+            <div class="category-filters">
+                <button class="filter-btn active" data-category="all">Tümü</button>
+                <button class="filter-btn" data-category="upperwear">Üst Giyim</button>
+                <button class="filter-btn" data-category="bottomwear">Alt Giyim</button>
+                <button class="filter-btn" data-category="one-piece">Tek Parça</button>
+                <button class="filter-btn" data-category="footwear">Ayakkabı</button>
+                <button class="filter-btn" data-category="accessories">Aksesuar</button>
+            </div>
+            <div class="products-grid">
+                <!-- Kıyafetler JavaScript ile buraya eklenecek -->
+            </div>
+        </div>
+    </section>
+
     <!-- Kombin Önerisi Bölümü -->
     <section id="outfit" class="outfit-section">
         <div class="container">
