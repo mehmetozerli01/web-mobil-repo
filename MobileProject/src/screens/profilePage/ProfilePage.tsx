@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator, Modal, ImageSourcePropType } from 'react-native';
 import useAuth from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
@@ -27,6 +27,21 @@ interface WeatherData {
   };
 }
 
+interface ClothingItem {
+  id: string;
+  name: string;
+  category: string;
+  subcategory: string;
+  imagePath: ImageSourcePropType;
+}
+
+interface WardrobeData {
+  upperwear: ClothingItem[];
+  bottomwear: ClothingItem[];
+  footwear: ClothingItem[];
+  accessories: ClothingItem[];
+}
+
 const apiKey = "e4802f53135adaf9fe32403d35b6a3ed";
 
 const ProfilePage = () => {
@@ -38,6 +53,12 @@ const ProfilePage = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [wardrobeData, setWardrobeData] = useState<WardrobeData>({
+    upperwear: [],
+    bottomwear: [],
+    footwear: [],
+    accessories: []
+  });
 
   const fetchWeather = async (city: City) => {
     setWeatherLoading(true);
@@ -73,9 +94,212 @@ const ProfilePage = () => {
     }
   };
 
+  useEffect(() => {
+    // Load wardrobe data
+    const loadWardrobeData = async () => {
+      try {
+        // Üst giyim verilerini yükle
+        const upperwearItems: ClothingItem[] = [
+          {
+            id: 'tshirt1',
+            name: 'Tişört',
+            category: 'upperwear',
+            subcategory: 'tshirt',
+            imagePath: require('../../../web/assets/data/clothes/upperwear/tshirt/upperwear_tshirt3967.png')
+          },
+          {
+            id: 'tshirt2',
+            name: 'Tişört',
+            category: 'upperwear',
+            subcategory: 'tshirt',
+            imagePath: require('../../../web/assets/data/clothes/upperwear/tshirt/upperwear_tshirt3963.png')
+          },
+          {
+            id: 'tshirt3',
+            name: 'Tişört',
+            category: 'upperwear',
+            subcategory: 'tshirt',
+            imagePath: require('../../../web/assets/data/clothes/upperwear/tshirt/upperwear_tshirt3960.png')
+          }
+        ];
+
+        // Alt giyim verilerini yükle
+        const bottomwearItems: ClothingItem[] = [
+          {
+            id: 'pants1',
+            name: 'Pantolon',
+            category: 'bottomwear',
+            subcategory: 'pants',
+            imagePath: require('../../../web/assets/data/clothes/bottomwear/pants/bottomwear_pants4621.png')
+          },
+          {
+            id: 'pants2',
+            name: 'Pantolon',
+            category: 'bottomwear',
+            subcategory: 'pants',
+            imagePath: require('../../../web/assets/data/clothes/bottomwear/pants/bottomwear_pants4609.png')
+          },
+          {
+            id: 'pants3',
+            name: 'Pantolon',
+            category: 'bottomwear',
+            subcategory: 'pants',
+            imagePath: require('../../../web/assets/data/clothes/bottomwear/pants/bottomwear_pants4598.png')
+          }
+        ];
+
+        // Ayakkabı verilerini yükle
+        const footwearItems: ClothingItem[] = [
+          {
+            id: 'sneakers1',
+            name: 'Spor Ayakkabı',
+            category: 'footwear',
+            subcategory: 'sneakers',
+            imagePath: require('../../../web/assets/data/clothes/footwear/sneakers/963.png')
+          },
+          {
+            id: 'sneakers2',
+            name: 'Spor Ayakkabı',
+            category: 'footwear',
+            subcategory: 'sneakers',
+            imagePath: require('../../../web/assets/data/clothes/footwear/sneakers/960.png')
+          },
+          {
+            id: 'sneakers3',
+            name: 'Spor Ayakkabı',
+            category: 'footwear',
+            subcategory: 'sneakers',
+            imagePath: require('../../../web/assets/data/clothes/footwear/sneakers/938.png')
+          }
+        ];
+
+        // Aksesuar verilerini yükle
+        const accessoriesItems: ClothingItem[] = [
+          {
+            id: 'hat1',
+            name: 'Şapka',
+            category: 'accessories',
+            subcategory: 'hat',
+            imagePath: require('../../../web/assets/data/clothes/accessories/hat/accessories_hat979.png')
+          },
+          {
+            id: 'hat2',
+            name: 'Şapka',
+            category: 'accessories',
+            subcategory: 'hat',
+            imagePath: require('../../../web/assets/data/clothes/accessories/hat/accessories_hat976.png')
+          },
+          {
+            id: 'bag1',
+            name: 'Çanta',
+            category: 'accessories',
+            subcategory: 'bag',
+            imagePath: require('../../../web/assets/data/clothes/accessories/bag/accessories_bag14205.png')
+          },
+          {
+            id: 'bag2',
+            name: 'Çanta',
+            category: 'accessories',
+            subcategory: 'bag',
+            imagePath: require('../../../web/assets/data/clothes/accessories/bag/accessories_bag14201.png')
+          }
+        ];
+
+        setWardrobeData({
+          upperwear: upperwearItems,
+          bottomwear: bottomwearItems,
+          footwear: footwearItems,
+          accessories: accessoriesItems
+        });
+      } catch (error) {
+        console.error('Gardırop verileri yüklenirken hata oluştu:', error);
+      }
+    };
+
+    loadWardrobeData();
+  }, []);
+
   if (!user) {
     return null;
   }
+
+  const renderWardrobeSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Kişisel Gardırobum</Text>
+      
+      {/* Üst Giyim */}
+      <View style={styles.wardrobeCategory}>
+        <Text style={styles.categoryTitle}>Üst Giyim</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+          {wardrobeData.upperwear.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+              <Image
+                source={item.imagePath}
+                style={styles.itemImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.itemName}>{item.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Alt Giyim */}
+      <View style={styles.wardrobeCategory}>
+        <Text style={styles.categoryTitle}>Alt Giyim</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+          {wardrobeData.bottomwear.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+              <Image
+                source={item.imagePath}
+                style={styles.itemImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.itemName}>{item.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Ayakkabı */}
+      <View style={styles.wardrobeCategory}>
+        <Text style={styles.categoryTitle}>Ayakkabı</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+          {wardrobeData.footwear.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+              <Image
+                source={item.imagePath}
+                style={styles.itemImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.itemName}>{item.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Aksesuarlar */}
+      <View style={styles.wardrobeCategory}>
+        <Text style={styles.categoryTitle}>Aksesuarlar</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+          {wardrobeData.accessories.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+              <Image
+                source={item.imagePath}
+                style={styles.itemImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.itemName}>{item.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <TouchableOpacity style={styles.addButton}>
+        <Text style={styles.addButtonText}>+ Yeni Kıyafet Ekle</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <ScrollView style={styles.container}>
@@ -212,98 +436,7 @@ const ProfilePage = () => {
         </View>
       </Modal>
 
-      {/* Kişisel Gardırop */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Kişisel Gardırobum</Text>
-        
-        {/* Üst Giyim */}
-        <View style={styles.wardrobeCategory}>
-          <Text style={styles.categoryTitle}>Üst Giyim</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5E5' }]} />
-              <Text style={styles.itemName}>Tişört</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5E5' }]} />
-              <Text style={styles.itemName}>Gömlek</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5E5' }]} />
-              <Text style={styles.itemName}>Sweat</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5E5' }]} />
-              <Text style={styles.itemName}>Mont</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* Alt Giyim */}
-        <View style={styles.wardrobeCategory}>
-          <Text style={styles.categoryTitle}>Alt Giyim</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#E5E5FF' }]} />
-              <Text style={styles.itemName}>Şort</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#E5E5FF' }]} />
-              <Text style={styles.itemName}>Pantolon</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#E5E5FF' }]} />
-              <Text style={styles.itemName}>Etek</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* Ayakkabı */}
-        <View style={styles.wardrobeCategory}>
-          <Text style={styles.categoryTitle}>Ayakkabı</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#E5FFE5' }]} />
-              <Text style={styles.itemName}>Spor Ayakkabı</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#E5FFE5' }]} />
-              <Text style={styles.itemName}>Bot</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#E5FFE5' }]} />
-              <Text style={styles.itemName}>Sandalet</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* Aksesuarlar */}
-        <View style={styles.wardrobeCategory}>
-          <Text style={styles.categoryTitle}>Aksesuarlar</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5FF' }]} />
-              <Text style={styles.itemName}>Şapka</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5FF' }]} />
-              <Text style={styles.itemName}>Bere</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5FF' }]} />
-              <Text style={styles.itemName}>Atkı</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.wardrobeItem}>
-              <View style={[styles.itemImage, { backgroundColor: '#FFE5FF' }]} />
-              <Text style={styles.itemName}>Eldiven</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>+ Yeni Kıyafet Ekle</Text>
-        </TouchableOpacity>
-      </View>
+      {renderWardrobeSection()}
 
       {/* Son Kombin Önerileri */}
       <View style={styles.section}>
@@ -490,10 +623,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemImage: {
-    width: 60,
-    height: 60,
+    width: 100,
+    height: 100,
     borderRadius: 10,
     marginBottom: 8,
+    backgroundColor: '#F0F0F0',
   },
   itemName: {
     fontSize: 14,
