@@ -176,6 +176,11 @@ async function fetchWeather(event, isLanding = false) {
                     const weatherCode = data.weather[0].id;
                     updateWeatherIcon(weatherIcon, weatherCode);
                 }
+
+                // Hava durumu değiştiğinde kıyafetleri güncelle
+                if (window.wardrobeData) {
+                    updateOutfitCards();
+                }
             } else {
                 console.error("Weather elements not found in weatherResult");
             }
@@ -217,6 +222,263 @@ function updateWeatherIcon(iconElement, weatherCode) {
     iconElement.className = `fas ${iconClass} weather-main-icon`;
 }
 
+// Rastgele kombin oluşturma fonksiyonu
+function generateRandomOutfit(wardrobeData) {
+    const outfit = {
+        upperwear: null,
+        bottomwear: null,
+        footwear: null,
+        accessories: null
+    };
+
+    // Her kategoriden rastgele bir parça seç
+    if (wardrobeData.upperwear && wardrobeData.upperwear.length > 0) {
+        outfit.upperwear = wardrobeData.upperwear[Math.floor(Math.random() * wardrobeData.upperwear.length)];
+    }
+    if (wardrobeData.bottomwear && wardrobeData.bottomwear.length > 0) {
+        outfit.bottomwear = wardrobeData.bottomwear[Math.floor(Math.random() * wardrobeData.bottomwear.length)];
+    }
+    if (wardrobeData.footwear && wardrobeData.footwear.length > 0) {
+        outfit.footwear = wardrobeData.footwear[Math.floor(Math.random() * wardrobeData.footwear.length)];
+    }
+    if (wardrobeData.accessories && wardrobeData.accessories.length > 0) {
+        outfit.accessories = wardrobeData.accessories[Math.floor(Math.random() * wardrobeData.accessories.length)];
+    }
+
+    return outfit;
+}
+
+// Kombin kartlarını güncelleme fonksiyonu
+function updateOutfitCards() {
+    const outfitCards = document.querySelectorAll('.outfit-card');
+    
+    outfitCards.forEach(card => {
+        const outfitType = card.querySelector('.outfit-header h2').textContent;
+        const outfitItems = card.querySelector('.outfit-items');
+        const outfitBtn = card.querySelector('.outfit-btn');
+        
+        if (!outfitItems) return;
+        
+        // Gardırop verilerini al
+        const wardrobeData = {
+            upperwear: window.wardrobeData?.upperwear || [],
+            bottomwear: window.wardrobeData?.bottomwear || [],
+            footwear: window.wardrobeData?.footwear || [],
+            accessories: window.wardrobeData?.accessories || []
+        };
+
+        // Kombin tipine göre uygun kıyafetleri seç
+        let selectedOutfit;
+        switch(outfitType) {
+            case 'Günlük Kombin':
+                selectedOutfit = generateRandomOutfit(wardrobeData);
+                break;
+            case 'Spor Kombin':
+                selectedOutfit = generateRandomOutfit(wardrobeData);
+                break;
+            case 'Resmi Kombin':
+                selectedOutfit = generateRandomOutfit(wardrobeData);
+                break;
+            default:
+                selectedOutfit = generateRandomOutfit(wardrobeData);
+        }
+
+        // Kombin kartını güncelle
+        outfitItems.innerHTML = '';
+
+        // Üst giyim
+        if (selectedOutfit.upperwear) {
+            const upperwearItem = document.createElement('div');
+            upperwearItem.className = 'outfit-item';
+            upperwearItem.innerHTML = `
+                <img src="${selectedOutfit.upperwear.imagePath}" alt="${selectedOutfit.upperwear.name}" class="outfit-image">
+                <span>${selectedOutfit.upperwear.name}</span>
+            `;
+            outfitItems.appendChild(upperwearItem);
+        }
+
+        // Alt giyim
+        if (selectedOutfit.bottomwear) {
+            const bottomwearItem = document.createElement('div');
+            bottomwearItem.className = 'outfit-item';
+            bottomwearItem.innerHTML = `
+                <img src="${selectedOutfit.bottomwear.imagePath}" alt="${selectedOutfit.bottomwear.name}" class="outfit-image">
+                <span>${selectedOutfit.bottomwear.name}</span>
+            `;
+            outfitItems.appendChild(bottomwearItem);
+        }
+
+        // Ayakkabı
+        if (selectedOutfit.footwear) {
+            const footwearItem = document.createElement('div');
+            footwearItem.className = 'outfit-item';
+            footwearItem.innerHTML = `
+                <img src="${selectedOutfit.footwear.imagePath}" alt="${selectedOutfit.footwear.name}" class="outfit-image">
+                <span>${selectedOutfit.footwear.name}</span>
+            `;
+            outfitItems.appendChild(footwearItem);
+        }
+
+        // Aksesuar
+        if (selectedOutfit.accessories) {
+            const accessoryItem = document.createElement('div');
+            accessoryItem.className = 'outfit-item';
+            accessoryItem.innerHTML = `
+                <img src="${selectedOutfit.accessories.imagePath}" alt="${selectedOutfit.accessories.name}" class="outfit-image">
+                <span>${selectedOutfit.accessories.name}</span>
+            `;
+            outfitItems.appendChild(accessoryItem);
+        }
+
+        // "Bu Kombini Seç" butonuna tıklama olayı ekle
+        if (outfitBtn) {
+            outfitBtn.addEventListener('click', () => {
+                // Yeni rastgele kombin oluştur
+                const newOutfit = generateRandomOutfit(wardrobeData);
+                
+                // Kombin kartını güncelle
+                outfitItems.innerHTML = '';
+                
+                // Üst giyim
+                if (newOutfit.upperwear) {
+                    const upperwearItem = document.createElement('div');
+                    upperwearItem.className = 'outfit-item';
+                    upperwearItem.innerHTML = `
+                        <img src="${newOutfit.upperwear.imagePath}" alt="${newOutfit.upperwear.name}" class="outfit-image">
+                        <span>${newOutfit.upperwear.name}</span>
+                    `;
+                    outfitItems.appendChild(upperwearItem);
+                }
+
+                // Alt giyim
+                if (newOutfit.bottomwear) {
+                    const bottomwearItem = document.createElement('div');
+                    bottomwearItem.className = 'outfit-item';
+                    bottomwearItem.innerHTML = `
+                        <img src="${newOutfit.bottomwear.imagePath}" alt="${newOutfit.bottomwear.name}" class="outfit-image">
+                        <span>${newOutfit.bottomwear.name}</span>
+                    `;
+                    outfitItems.appendChild(bottomwearItem);
+                }
+
+                // Ayakkabı
+                if (newOutfit.footwear) {
+                    const footwearItem = document.createElement('div');
+                    footwearItem.className = 'outfit-item';
+                    footwearItem.innerHTML = `
+                        <img src="${newOutfit.footwear.imagePath}" alt="${newOutfit.footwear.name}" class="outfit-image">
+                        <span>${newOutfit.footwear.name}</span>
+                    `;
+                    outfitItems.appendChild(footwearItem);
+                }
+
+                // Aksesuar
+                if (newOutfit.accessories) {
+                    const accessoryItem = document.createElement('div');
+                    accessoryItem.className = 'outfit-item';
+                    accessoryItem.innerHTML = `
+                        <img src="${newOutfit.accessories.imagePath}" alt="${newOutfit.accessories.name}" class="outfit-image">
+                        <span>${newOutfit.accessories.name}</span>
+                    `;
+                    outfitItems.appendChild(accessoryItem);
+                }
+            });
+        }
+    });
+}
+
+// Kombin önerisi popup'ını güncelle
+function updateOutfitPopup(outfit) {
+    const outfitItemsGrid = document.querySelector('.outfit-items-grid');
+    if (!outfitItemsGrid) return;
+
+    outfitItemsGrid.innerHTML = '';
+
+    // Üst giyim
+    if (outfit.upperwear) {
+        const upperwearItem = document.createElement('div');
+        upperwearItem.className = 'outfit-item';
+        upperwearItem.innerHTML = `
+            <img src="${outfit.upperwear.imagePath}" alt="${outfit.upperwear.name}" class="outfit-image">
+            <span>${outfit.upperwear.name}</span>
+        `;
+        outfitItemsGrid.appendChild(upperwearItem);
+    }
+
+    // Alt giyim
+    if (outfit.bottomwear) {
+        const bottomwearItem = document.createElement('div');
+        bottomwearItem.className = 'outfit-item';
+        bottomwearItem.innerHTML = `
+            <img src="${outfit.bottomwear.imagePath}" alt="${outfit.bottomwear.name}" class="outfit-image">
+            <span>${outfit.bottomwear.name}</span>
+        `;
+        outfitItemsGrid.appendChild(bottomwearItem);
+    }
+
+    // Ayakkabı
+    if (outfit.footwear) {
+        const footwearItem = document.createElement('div');
+        footwearItem.className = 'outfit-item';
+        footwearItem.innerHTML = `
+            <img src="${outfit.footwear.imagePath}" alt="${outfit.footwear.name}" class="outfit-image">
+            <span>${outfit.footwear.name}</span>
+        `;
+        outfitItemsGrid.appendChild(footwearItem);
+    }
+
+    // Aksesuar
+    if (outfit.accessories) {
+        const accessoryItem = document.createElement('div');
+        accessoryItem.className = 'outfit-item';
+        accessoryItem.innerHTML = `
+            <img src="${outfit.accessories.imagePath}" alt="${outfit.accessories.name}" class="outfit-image">
+            <span>${outfit.accessories.name}</span>
+        `;
+        outfitItemsGrid.appendChild(accessoryItem);
+    }
+}
+
+// Kombin Önerisi Popup işlemleri
+document.addEventListener('DOMContentLoaded', function() {
+    const outfitBtn = document.querySelector('.landing-outfit-btn');
+    const outfitPopup = document.getElementById('outfitPopup');
+    const closePopup = document.querySelector('.close-popup');
+
+    // Popup'ı aç ve rastgele kombin oluştur
+    outfitBtn.addEventListener('click', function() {
+        // Gardırop verilerini al
+        const wardrobeData = {
+            upperwear: window.wardrobeData?.upperwear || [],
+            bottomwear: window.wardrobeData?.bottomwear || [],
+            footwear: window.wardrobeData?.footwear || [],
+            accessories: window.wardrobeData?.accessories || []
+        };
+
+        // Rastgele kombin oluştur
+        const randomOutfit = generateRandomOutfit(wardrobeData);
+        
+        // Popup'ı güncelle ve göster
+        updateOutfitPopup(randomOutfit);
+        outfitPopup.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Popup'ı kapat
+    closePopup.addEventListener('click', function() {
+        outfitPopup.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+
+    // Popup dışına tıklandığında kapat
+    window.addEventListener('click', function(event) {
+        if (event.target === outfitPopup) {
+            outfitPopup.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+});
+
 // Sayfa yüklendiğinde şehirleri getir ve formları etkinleştir
 window.onload = () => {
     loadCities();
@@ -242,31 +504,222 @@ window.onload = () => {
     } else {
         console.log("Weather form not found");
     }
+
+    // Kıyafetler yüklendikten sonra kombin kartlarını güncelle
+    if (window.wardrobeData) {
+        updateOutfitCards();
+    } else {
+        // Kıyafetler henüz yüklenmediyse, yüklendikten sonra güncelle
+        const checkWardrobeData = setInterval(() => {
+            if (window.wardrobeData) {
+                updateOutfitCards();
+                clearInterval(checkWardrobeData);
+            }
+        }, 100);
+    }
 };
 
-// Kombin Önerisi Popup işlemleri
-document.addEventListener('DOMContentLoaded', function() {
-    const outfitBtn = document.querySelector('.landing-outfit-btn');
-    const outfitPopup = document.getElementById('outfitPopup');
-    const closePopup = document.querySelector('.close-popup');
+// Blog Slider için moda ipuçları
+const fashionTips = [
+    {
+        title: 'Klasik Görünüm',
+        description: 'Klasik bir görünüm için siyah bir elbise ve kırmızı ruj mükemmel bir seçimdir.',
+        icon: 'fa-lightbulb'
+    },
+    {
+        title: 'Minimalist Aksesuarlar',
+        description: 'Kıyafetinize şıklık katmak için minimalist takılar tercih edin.',
+        icon: 'fa-gem'
+    },
+    {
+        title: 'Desen Kombinleri',
+        description: 'Farklı desenleri kombinlerken, dengeyi korumak önemli. Tek bir ögeyi ön plana çıkarın ve geri kalanını nötr tutun.',
+        icon: 'fa-palette'
+    },
+    {
+        title: 'Yaz Kombini',
+        description: 'Yazın en rahat kombini: Beyaz tişört, kot şort ve sandalet!',
+        icon: 'fa-tshirt'
+    },
+    {
+        title: 'Beden Tipi',
+        description: 'Beden tipinize uygun giysiler giyerek hem rahat hem şık olabilirsiniz.',
+        icon: 'fa-user'
+    },
+    {
+        title: 'Renk Uyumu',
+        description: 'Renk uyumu, şıklığın anahtarıdır. Renkli aksesuarlarla sade bir elbise kombinleyin.',
+        icon: 'fa-paint-brush'
+    },
+    {
+        title: 'Çanta Detayı',
+        description: 'Bir çanta, kombininizi tamamlayan en önemli detaydır. Bazen küçük bir çanta, tüm görünümü değiştirir.',
+        icon: 'fa-shopping-bag'
+    },
+    {
+        title: 'Spor Ayakkabı',
+        description: 'Spor ayakkabılar sadece spor yaparken değil, günlük kombinlerde de kullanılabilir.',
+        icon: 'fa-shoe-prints'
+    },
+    {
+        title: 'Mevsimsel Renkler',
+        description: 'Mevsime uygun renkler seçerek, kıyafetlerinizi sezonun ruhuna uygun hale getirebilirsiniz.',
+        icon: 'fa-leaf'
+    },
+    {
+        title: 'İş Kombini',
+        description: 'Gömlek ve blazer ceket kombinini, hem iş hayatınızda hem günlük yaşamda rahatça kullanabilirsiniz.',
+        icon: 'fa-vest'
+    }
+];
 
-    // Popup'ı aç
-    outfitBtn.addEventListener('click', function() {
-        outfitPopup.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Sayfa kaydırmayı engelle
+let currentBlogSlide = 0;
+const blogSliderTrack = document.querySelector('.blog-slider .slider-track');
+const blogSliderDots = document.querySelector('.blog-slider .slider-dots');
+
+function getRandomClothesImage() {
+    const categories = ['upperwear', 'bottomwear', 'footwear', 'accessories'];
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    const categoryItems = window.wardrobeData?.[randomCategory] || [];
+    
+    if (categoryItems.length > 0) {
+        const randomItem = categoryItems[Math.floor(Math.random() * categoryItems.length)];
+        return randomItem.imagePath;
+    }
+    
+    // Eğer gardırop verisi yoksa varsayılan görsel
+    return 'assets/images/moda ikonu.png';
+}
+
+function updateBlogSlider() {
+    if (!blogSliderTrack) return;
+    
+    blogSliderTrack.style.transform = `translateX(-${currentBlogSlide * 100}%)`;
+    
+    // Update dots
+    const dots = blogSliderDots.querySelectorAll('.slider-dot');
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentBlogSlide);
     });
+}
 
-    // Popup'ı kapat
-    closePopup.addEventListener('click', function() {
-        outfitPopup.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Sayfa kaydırmayı tekrar etkinleştir
+function nextBlogSlide() {
+    currentBlogSlide = (currentBlogSlide + 1) % fashionTips.length;
+    updateBlogSlider();
+}
+
+function prevBlogSlide() {
+    currentBlogSlide = (currentBlogSlide - 1 + fashionTips.length) % fashionTips.length;
+    updateBlogSlider();
+}
+
+// Initialize blog slider
+function initBlogSlider() {
+    if (!blogSliderTrack || !blogSliderDots) return;
+    
+    // Clear existing content
+    blogSliderTrack.innerHTML = '';
+    blogSliderDots.innerHTML = '';
+    
+    // Add slides
+    fashionTips.forEach((tip, index) => {
+        // Create slide
+        const slide = document.createElement('div');
+        slide.className = 'slider-item';
+        slide.innerHTML = `
+            <img src="${getRandomClothesImage()}" alt="${tip.title}">
+            <div class="slider-content">
+                <h3 class="slider-title"><i class="fas ${tip.icon}"></i> ${tip.title}</h3>
+                <p class="slider-description">${tip.description}</p>
+            </div>
+        `;
+        blogSliderTrack.appendChild(slide);
+        
+        // Create dot
+        const dot = document.createElement('span');
+        dot.className = `slider-dot ${index === 0 ? 'active' : ''}`;
+        dot.addEventListener('click', () => {
+            currentBlogSlide = index;
+            updateBlogSlider();
+        });
+        blogSliderDots.appendChild(dot);
     });
+    
+    // Add event listeners
+    const prevBtn = document.querySelector('.blog-slider .prev-btn');
+    const nextBtn = document.querySelector('.blog-slider .next-btn');
+    
+    if (prevBtn) prevBtn.addEventListener('click', prevBlogSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextBlogSlide);
+    
+    // Auto slide every 5 seconds
+    setInterval(nextBlogSlide, 5000);
+}
 
-    // Popup dışına tıklandığında kapat
-    window.addEventListener('click', function(event) {
-        if (event.target === outfitPopup) {
-            outfitPopup.style.display = 'none';
-            document.body.style.overflow = 'auto';
+// Initialize blog slider when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait for wardrobe data to be available
+    const checkWardrobeData = setInterval(() => {
+        if (window.wardrobeData) {
+            initBlogSlider();
+            clearInterval(checkWardrobeData);
         }
+    }, 100);
+});
+
+// Yazlık ve Kışlık klasörlerinden rastgele 5 görseli ekrana getir
+const YAZLIK_DIR = "assets/data/clustered_output/yazlik";
+const KISLIK_DIR = "assets/data/clustered_output/kislik";
+const IMG_COUNT = 5;
+
+async function getAllImagesFromFolder(folderPath) {
+    let images = [];
+    try {
+        const response = await fetch(folderPath);
+        if (!response.ok) return [];
+        const text = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const links = Array.from(doc.querySelectorAll('a'));
+        for (const link of links) {
+            const href = link.getAttribute('href');
+            if (!href || href === '../') continue;
+            if (href.match(/\.(jpg|jpeg|png)$/i)) {
+                images.push(folderPath + '/' + href);
+            } else if (!href.includes('.')) {
+                // Alt klasör ise recursive tara
+                const subImages = await getAllImagesFromFolder(folderPath + '/' + href.replace('/', ''));
+                images = images.concat(subImages);
+            }
+        }
+    } catch (e) {
+        console.error('Resimler alınırken hata:', e);
+    }
+    return images;
+}
+
+function getRandomItems(arr, n) {
+    const shuffled = arr.slice().sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, n);
+}
+
+async function showRandomClothes(folderPath, containerId) {
+    const allImages = await getAllImagesFromFolder(folderPath);
+    const randomImages = getRandomItems(allImages, IMG_COUNT);
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    randomImages.forEach(imgPath => {
+        const img = document.createElement('img');
+        img.src = imgPath;
+        img.width = 150;
+        img.height = 150;
+        img.style.margin = '5px';
+        img.onerror = () => { img.src = 'https://via.placeholder.com/150x150?text=No+Image'; };
+        container.appendChild(img);
     });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    showRandomClothes(YAZLIK_DIR, 'yazlik-images');
+    showRandomClothes(KISLIK_DIR, 'kislik-images');
 });

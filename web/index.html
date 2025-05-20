@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script defer src="assets/javascript/main.js"></script>
     <script defer src="assets/javascript/clothes.js"></script>
+    <!-- TensorFlow.js kütüphanesi -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
     <style>
         .products-section {
             padding: 20px;
@@ -206,6 +208,204 @@
                 height: 200px;
             }
         }
+
+        .clothes-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .error-container {
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc3545;
+            padding: 10px;
+            border: 1px solid #dc3545;
+            border-radius: 4px;
+            background-color: #fff0f0;
+            margin: 10px 0;
+        }
+
+        .category-select-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 32px;
+        }
+        .select-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .select-group label {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .select-group select {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        @media (max-width: 600px) {
+            .category-select-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+
+        /* Yeni eklenen stiller */
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-container img:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .loading {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .image-container {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .image-container img {
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .image-container {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .image-container img {
+                height: 150px;
+            }
+        }
+
+        /* Kombin popup stilleri */
+        .outfit-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .outfit-popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-popup {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .outfit-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .outfit-item {
+            text-align: center;
+        }
+
+        .outfit-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .outfit-item span {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            color: #dc3545;
+            padding: 15px;
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            background-color: #fff0f0;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .outfit-popup-content {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .outfit-items-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .outfit-item img {
+                height: 150px;
+            }
+        }
     </style>
 </head>
 
@@ -369,112 +569,38 @@
     <!-- Kıyafetler Bölümü -->
     <section id="clothes" class="clothes-section">
         <div class="container">
-            <h2 class="section-title">Kıyafetlerimiz</h2>
-            <div class="category-filters">
-                <button class="filter-btn active" data-category="all">Tümü</button>
-                <button class="filter-btn" data-category="upperwear">Üst Giyim</button>
-                <button class="filter-btn" data-category="bottomwear">Alt Giyim</button>
-                <button class="filter-btn" data-category="one-piece">Tek Parça</button>
-                <button class="filter-btn" data-category="footwear">Ayakkabı</button>
-                <button class="filter-btn" data-category="accessories">Aksesuar</button>
+            <h2 class="section-title" style="text-align:center; margin-bottom:32px;">Kıyafet Görselleri</h2>
+            <div class="category-select-row" style="display:flex;justify-content:center;gap:40px;margin-bottom:32px;">
+                <div class="select-group" style="display:flex;align-items:center;gap:10px;">
+                    <label for="mainCategory">Ana Kategori:</label>
+                    <select id="mainCategory">
+                        <option value="">Seçin</option>
+                    </select>
+                </div>
+                <div class="select-group" style="display:flex;align-items:center;gap:10px;">
+                    <label for="subCategory">Alt Kategori:</label>
+                    <select id="subCategory">
+                        <option value="">Seçin</option>
+                    </select>
+                </div>
             </div>
-            <div class="products-grid">
-                <!-- Kıyafetler JavaScript ile buraya eklenecek -->
-            </div>
+            <div id="errorContainer"></div>
+            <div class="image-container" id="imageContainer"></div>
         </div>
+    </section>
+
+    <!-- Yazlık ve Kışlık Kıyafetler Bölümü -->
+    <section id="random-clothes" style="padding:40px 0;">
+        <h2 style="text-align:center;">☀ Yazlık Kıyafetler</h2>
+        <div id="yazlik-images" class="clothes-row"></div>
+        <h2 style="text-align:center;margin-top:40px;">❄ Kışlık Kıyafetler</h2>
+        <div id="kislik-images" class="clothes-row"></div>
     </section>
 
     <!-- Kombin Önerisi Bölümü -->
     <section id="outfit" class="outfit-section">
         <div class="container">
-            <div class="outfit-cards-container">
-                <!-- Günlük Kombin Kartı -->
-                <div class="outfit-card">
-                    <div class="outfit-header">
-                        <i class="fas fa-tshirt"></i>
-                        <h2>Günlük Kombin</h2>
-                    </div>
-                    <div class="outfit-content">
-                        <div class="outfit-items">
-                            <div class="outfit-item">
-                                <img src="assets/images/hat.svg" alt="Şapka" class="outfit-image">
-                                <span>Şapka</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/hoodie.svg" alt="Sweatshirt" class="outfit-image">
-                                <span>Sweatshirt</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/jeans.svg" alt="Pantolon" class="outfit-image">
-                                <span>Pantolon</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/sneaker.svg" alt="Ayakkabı" class="outfit-image">
-                                <span>Spor Ayakkabı</span>
-                            </div>
-                        </div>
-                        <button class="outfit-btn">Bu Kombini Seç</button>
-                    </div>
-                </div>
-
-                <!-- Resmi Kombin Kartı -->
-                <div class="outfit-card">
-                    <div class="outfit-header">
-                        <i class="fas fa-user-tie"></i>
-                        <h2>Resmi Kombin</h2>
-                    </div>
-                    <div class="outfit-content">
-                        <div class="outfit-items">
-                            <div class="outfit-item">
-                                <img src="assets/images/hat.svg" alt="Şapka" class="outfit-image">
-                                <span>Şapka</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/hoodie.svg" alt="Sweatshirt" class="outfit-image">
-                                <span>Gömlek</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/jeans.svg" alt="Pantolon" class="outfit-image">
-                                <span>Kumaş Pantolon</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/sneaker.svg" alt="Ayakkabı" class="outfit-image">
-                                <span>Deri Ayakkabı</span>
-                            </div>
-                        </div>
-                        <button class="outfit-btn">Bu Kombini Seç</button>
-                    </div>
-                </div>
-
-                <!-- Spor Kombin Kartı -->
-                <div class="outfit-card">
-                    <div class="outfit-header">
-                        <i class="fas fa-running"></i>
-                        <h2>Spor Kombin</h2>
-                    </div>
-                    <div class="outfit-content">
-                        <div class="outfit-items">
-                            <div class="outfit-item">
-                                <img src="assets/images/hat.svg" alt="Şapka" class="outfit-image">
-                                <span>Şapka</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/hoodie.svg" alt="Sweatshirt" class="outfit-image">
-                                <span>Spor Tişört</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/jeans.svg" alt="Pantolon" class="outfit-image">
-                                <span>Eşofman</span>
-                            </div>
-                            <div class="outfit-item">
-                                <img src="assets/images/sneaker.svg" alt="Ayakkabı" class="outfit-image">
-                                <span>Spor Ayakkabı</span>
-                            </div>
-                        </div>
-                        <button class="outfit-btn">Bu Kombini Seç</button>
-                    </div>
-                </div>
-            </div>
+            <div class="outfit-cards-container" id="dynamicOutfitCards"></div>
         </div>
     </section>
 
@@ -482,57 +608,21 @@
     <section id="blog" class="blog-section">
         <div class="container">
             <h2>Moda İpuçları ve Öneriler</h2>
-            <div class="blog-grid">
-                <article class="blog-card">
-                    <div class="blog-content">
-                        <h3>Moda İpuçları</h3>
-                        <div class="fashion-tips">
-                            <div class="fashion-tip">
-                                <i class="fas fa-lightbulb"></i>
-                                <p>Klasik bir görünüm için siyah bir elbise ve kırmızı ruj mükemmel bir seçimdir.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-gem"></i>
-                                <p>Kıyafetinize şıklık katmak için minimalist takılar tercih edin.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-palette"></i>
-                                <p>Farklı desenleri kombinlerken, dengeyi korumak önemli. Tek bir ögeyi ön plana çıkarın ve geri kalanını nötr tutun.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-tshirt"></i>
-                                <p>Yazın en rahat kombini: Beyaz tişört, kot şort ve sandalet!</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-user"></i>
-                                <p>Beden tipinize uygun giysiler giyerek hem rahat hem şık olabilirsiniz.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-paint-brush"></i>
-                                <p>Renk uyumu, şıklığın anahtarıdır. Renkli aksesuarlarla sade bir elbise kombinleyin.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-shopping-bag"></i>
-                                <p>Bir çanta, kombininizi tamamlayan en önemli detaydır. Bazen küçük bir çanta, tüm görünümü değiştirir.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-shoe-prints"></i>
-                                <p>Spor ayakkabılar sadece spor yaparken değil, günlük kombinlerde de kullanılabilir.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-leaf"></i>
-                                <p>Mevsime uygun renkler seçerek, kıyafetlerinizi sezonun ruhuna uygun hale getirebilirsiniz.</p>
-                            </div>
-                            <div class="fashion-tip">
-                                <i class="fas fa-vest"></i>
-                                <p>Gömlek ve blazer ceket kombinini, hem iş hayatınızda hem günlük yaşamda rahatça kullanabilirsiniz.</p>
-                            </div>
-                        </div>
+            <div class="blog-slider">
+                <button class="slider-btn prev-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="slider-container">
+                    <div class="slider-track">
+                        <!-- Slides will be added dynamically via JavaScript -->
                     </div>
-                    <div class="blog-image">
-                        <img src="assets/images/moda ikonu.png" alt="Moda İkonu">
-                    </div>
-                </article>
+                </div>
+                <button class="slider-btn next-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="slider-dots">
+                    <!-- Dots will be added dynamically via JavaScript -->
+                </div>
             </div>
         </div>
     </section>
@@ -566,6 +656,32 @@
                         
                         <p>Yapay zeka teknolojisinin gücünü kullanarak, her kullanıcının stilini en üst düzeye çıkaracak, onların kendilerini özgür ve şık hissettikleri bir dünya yaratmayı hedefliyoruz. Global çapta tanınan, kullanıcı odaklı, yenilikçi ve trend belirleyici bir moda platformu olmak istiyoruz.</p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Moda İpuçları Bölümü -->
+    <section class="fashion-tips-section">
+        <div class="container">
+            <h2 class="section-title">Moda İpuçları</h2>
+            <div class="fashion-tips-slider">
+                <button class="slider-btn prev-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="slider-container">
+                    <div class="slider-track">
+                        <!-- Slides will be added dynamically via JavaScript -->
+                    </div>
+                </div>
+                <button class="slider-btn next-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="slider-dots">
+                    <span class="slider-dot active"></span>
+                    <span class="slider-dot"></span>
+                    <span class="slider-dot"></span>
+                    <span class="slider-dot"></span>
                 </div>
             </div>
         </div>
@@ -626,7 +742,250 @@
             </div>
         </div>
     </div>
-</body>
 
+    <!-- Gerekli JavaScript -->
+    <script defer src="assets/javascript/main.js"></script>
+    <script defer src="assets/javascript/random_clothes.js"></script>
+    <script>
+    const apiBase = "http://127.0.0.1:8000";
+    const errorContainer = document.getElementById("errorContainer");
+
+    // Kombin önerisi için gerekli kategoriler
+    const outfitCategories = ['ust_giyim', 'alt_giyim', 'ayakkabi', 'aksesuar'];
+
+    // Popup elementlerini seç
+    const outfitPopup = document.getElementById('outfitPopup');
+    const closePopup = document.querySelector('.close-popup');
+    const outfitItemsGrid = document.querySelector('.outfit-items-grid');
+
+    // Popup'ı aç/kapat fonksiyonları
+    function openOutfitPopup() {
+        outfitPopup.style.display = 'flex';
+        loadRandomOutfit();
+    }
+
+    function closeOutfitPopup() {
+        outfitPopup.style.display = 'none';
+    }
+
+    // Kombin önerisi için ana kategorileri API'dan dinamik olarak çek
+    async function loadRandomOutfit() {
+        try {
+            outfitItemsGrid.innerHTML = '<div class="loading">Kombin yükleniyor...</div>';
+            // Ana kategorileri çek
+            const mainCatRes = await fetch(`${apiBase}/categories`);
+            if (!mainCatRes.ok) throw new Error('Ana kategoriler alınamadı.');
+            const mainCategories = await mainCatRes.json();
+            
+            // Her ana kategori için random alt kategori ve random görsel seç
+            const outfitPromises = mainCategories.map(async (category) => {
+                // Alt kategorileri çek
+                const subCatRes = await fetch(`${apiBase}/categories/${category}`);
+                if (!subCatRes.ok) return null;
+                const subCategories = await subCatRes.json();
+                if (!subCategories.length) return null;
+                // Random alt kategori seç
+                const randomSub = subCategories[Math.floor(Math.random() * subCategories.length)];
+                // Görselleri çek
+                const imgRes = await fetch(`${apiBase}/categories/${category}/${randomSub}`);
+                if (!imgRes.ok) return null;
+                const images = await imgRes.json();
+                if (!images.length) return null;
+                // Random görsel seç
+                const randomImg = images[Math.floor(Math.random() * images.length)];
+                return {
+                    category,
+                    subCategory: randomSub,
+                    imageUrl: apiBase + randomImg
+                };
+            });
+            const outfitItems = (await Promise.all(outfitPromises)).filter(Boolean);
+            if (!outfitItems.length) {
+                outfitItemsGrid.innerHTML = '<div class="error">Kombin oluşturulamadı. Kategorilerde uygun görsel bulunamadı.</div>';
+                return;
+            }
+            // Popup içeriğini güncelle
+            outfitItemsGrid.innerHTML = outfitItems.map(item => `
+                <div class="outfit-item">
+                    <img src="${item.imageUrl}" alt="${item.subCategory}" onerror="this.src='https://via.placeholder.com/200x200?text=Görsel+Yok'">
+                    <span>${item.subCategory}</span>
+                </div>
+            `).join('');
+        } catch (error) {
+            outfitItemsGrid.innerHTML = `<div class="error">Kombin oluşturulamadı. ${error.message}</div>`;
+        }
+    }
+
+    // Event listener'ları ekle
+    document.querySelector('.landing-outfit-btn').addEventListener('click', openOutfitPopup);
+    closePopup.addEventListener('click', closeOutfitPopup);
+    window.addEventListener('click', (e) => {
+        if (e.target === outfitPopup) {
+            closeOutfitPopup();
+        }
+    });
+
+    function showError(message) {
+        errorContainer.innerHTML = `<div style='color:#c00;background:#ffeaea;border:1px solid #c00;border-radius:6px;padding:12px;margin:24px 0;text-align:center;'>${message}</div>`;
+    }
+    function clearError() {
+        errorContainer.innerHTML = '';
+    }
+
+    async function loadMainCategories() {
+        try {
+            clearError();
+            const res = await fetch(`${apiBase}/categories`);
+            if (!res.ok) throw new Error("Ana kategoriler yüklenemedi.");
+            const categories = await res.json();
+            const mainCategorySelect = document.getElementById("mainCategory");
+            mainCategorySelect.innerHTML = '<option value="">Seçin</option>';
+            categories.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat;
+                option.textContent = cat;
+                mainCategorySelect.appendChild(option);
+            });
+        } catch (e) {
+            showError(e.message);
+        }
+    }
+
+    async function loadSubcategories() {
+        try {
+            clearError();
+            const mainCategory = document.getElementById("mainCategory").value;
+            const subCategorySelect = document.getElementById("subCategory");
+            subCategorySelect.innerHTML = '<option value="">Seçin</option>';
+            document.getElementById("imageContainer").innerHTML = '';
+            if (!mainCategory) return;
+            const res = await fetch(`${apiBase}/categories/${mainCategory}`);
+            if (!res.ok) throw new Error("Alt kategoriler yüklenemedi.");
+            const subcategories = await res.json();
+            subcategories.forEach(sub => {
+                const option = document.createElement("option");
+                option.value = sub;
+                option.textContent = sub;
+                subCategorySelect.appendChild(option);
+            });
+        } catch (e) {
+            showError(e.message);
+        }
+    }
+
+    async function loadImages() {
+        try {
+            clearError();
+            const mainCategory = document.getElementById("mainCategory").value;
+            const subCategory = document.getElementById("subCategory").value;
+            const imageContainer = document.getElementById("imageContainer");
+            imageContainer.innerHTML = '';
+            if (!mainCategory || !subCategory) return;
+            imageContainer.innerHTML = '<div class="loading">Görseller yükleniyor...</div>';
+            const res = await fetch(`${apiBase}/categories/${mainCategory}/${subCategory}`);
+            if (!res.ok) throw new Error("Görseller yüklenemedi.");
+            const images = await res.json();
+            if (!images.length) {
+                imageContainer.innerHTML = '<div style="text-align:center;margin:32px 0;font-size:1.1rem;color:#666;">Bu kategoride görsel bulunamadı.</div>';
+                return;
+            }
+            imageContainer.innerHTML = '';
+            images.forEach(imgUrl => {
+                const img = document.createElement("img");
+                img.src = apiBase + imgUrl;
+                img.alt = `${mainCategory} - ${subCategory}`;
+                img.onerror = () => {
+                    img.src = 'https://via.placeholder.com/200x200?text=Görsel+Yok';
+                };
+                imageContainer.appendChild(img);
+            });
+        } catch (e) {
+            showError(e.message);
+            document.getElementById("imageContainer").innerHTML = '';
+        }
+    }
+
+    document.getElementById("mainCategory").addEventListener("change", loadSubcategories);
+    document.getElementById("subCategory").addEventListener("change", loadImages);
+    window.addEventListener("DOMContentLoaded", loadMainCategories);
+
+    // Dinamik kombin kartları oluşturma
+    const kombinTypes = [
+        { title: 'Günlük Kombin', icon: 'fa-tshirt' },
+        { title: 'Resmi Kombin', icon: 'fa-user-tie' },
+        { title: 'Spor Kombin', icon: 'fa-running' }
+    ];
+
+    async function getRandomKombinForCard() {
+        // Ana kategorileri çek
+        const mainCatRes = await fetch(`${apiBase}/categories`);
+        if (!mainCatRes.ok) return [];
+        const mainCategories = await mainCatRes.json();
+        // Her ana kategori için random alt kategori ve random görsel seç
+        const outfitPromises = mainCategories.map(async (category) => {
+            const subCatRes = await fetch(`${apiBase}/categories/${category}`);
+            if (!subCatRes.ok) return null;
+            const subCategories = await subCatRes.json();
+            if (!subCategories.length) return null;
+            const randomSub = subCategories[Math.floor(Math.random() * subCategories.length)];
+            const imgRes = await fetch(`${apiBase}/categories/${category}/${randomSub}`);
+            if (!imgRes.ok) return null;
+            const images = await imgRes.json();
+            if (!images.length) return null;
+            const randomImg = images[Math.floor(Math.random() * images.length)];
+            return {
+                category,
+                subCategory: randomSub,
+                imageUrl: apiBase + randomImg
+            };
+        });
+        return (await Promise.all(outfitPromises)).filter(Boolean);
+    }
+
+    async function renderDynamicKombinCards() {
+        const container = document.getElementById('dynamicOutfitCards');
+        container.innerHTML = '<div class="loading">Kombinler yükleniyor...</div>';
+        try {
+            // Her kart için ayrı random kombin oluştur
+            const allKombins = await Promise.all([
+                getRandomKombinForCard(),
+                getRandomKombinForCard(),
+                getRandomKombinForCard()
+            ]);
+            container.innerHTML = '';
+            kombinTypes.forEach((type, idx) => {
+                const kombin = allKombins[idx];
+                if (!kombin.length) {
+                    container.innerHTML += `<div class="outfit-card"><div class="outfit-header"><i class="fas ${type.icon}"></i><h2>${type.title}</h2></div><div class="outfit-content"><div class="error">Kombin bulunamadı.</div></div></div>`;
+                    return;
+                }
+                container.innerHTML += `
+                <div class="outfit-card">
+                    <div class="outfit-header">
+                        <i class="fas ${type.icon}"></i>
+                        <h2>${type.title}</h2>
+                    </div>
+                    <div class="outfit-content">
+                        <div class="outfit-items">
+                            ${kombin.map(item => `
+                                <div class="outfit-item">
+                                    <img src="${item.imageUrl}" alt="${item.subCategory}" class="outfit-image" onerror="this.src='https://via.placeholder.com/200x200?text=Görsel+Yok'">
+                                    <span>${item.subCategory}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="outfit-btn">Bu Kombini Seç</button>
+                    </div>
+                </div>
+                `;
+            });
+        } catch (e) {
+            container.innerHTML = `<div class="error">Kombinler yüklenirken hata oluştu.</div>`;
+        }
+    }
+    // Sayfa yüklendiğinde kombin kartlarını getir
+    window.addEventListener('DOMContentLoaded', renderDynamicKombinCards);
+    </script>
+</body>
 
 </html>
