@@ -406,6 +406,72 @@
                 height: 150px;
             }
         }
+
+        #chatbot-modal::-webkit-scrollbar { width: 0; }
+        .chatbot-msg-user {
+            align-self: flex-end;
+            background: #e0e7ff;
+            color: #222;
+            border-radius: 14px 14px 4px 14px;
+            padding: 8px 14px;
+            max-width: 80%;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        .chatbot-msg-bot {
+            align-self: flex-start;
+            background: #f3f4f6;
+            color: #222;
+            border-radius: 14px 14px 14px 4px;
+            padding: 8px 14px;
+            max-width: 80%;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        .chatbot-msg-user {
+            align-self: flex-end;
+            background: #4a90e2;
+            color: #fff;
+            border-radius: 14px 14px 4px 14px;
+            padding: 10px 16px;
+            max-width: 85%;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chatbot-msg-bot {
+            align-self: flex-start;
+            background: #fff;
+            color: #333;
+            border-radius: 14px 14px 14px 4px;
+            padding: 10px 16px;
+            max-width: 85%;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .suggestion-btn {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #555;
+        }
+        .suggestion-btn:hover {
+            background: #4a90e2;
+            color: #fff;
+            border-color: #4a90e2;
+        }
+        #chatbot-toggle button:hover {
+            transform: scale(1.05);
+        }
+        #chatbot-form button:hover {
+            background: #357abd;
+        }
     </style>
 </head>
 
@@ -743,6 +809,32 @@
         </div>
     </div>
 
+    <!-- Chatbot Moda Danışmanı -->
+    <div id="chatbot-toggle" style="position:fixed;bottom:30px;right:30px;z-index:2000;">
+        <button style="background:#4a90e2;color:#fff;border:none;border-radius:50%;width:60px;height:60px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;transition:transform 0.2s;">💬</button>
+    </div>
+    <div id="chatbot-modal" style="display:none;position:fixed;bottom:100px;right:30px;width:380px;max-width:95vw;height:580px;max-height:80vh;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.18);z-index:2001;flex-direction:column;overflow:hidden;">
+        <div style="background:#4a90e2;color:#fff;padding:16px 20px;font-size:1.1rem;font-weight:600;display:flex;align-items:center;justify-content:space-between;">
+            <span>🌤 Hava Durumu Moda Danışmanı</span>
+            <span id="chatbot-close" style="cursor:pointer;font-size:22px;">&times;</span>
+        </div>
+        <div id="chatbot-suggestions" style="padding:12px;background:#f8f9fa;border-bottom:1px solid #eee;display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="suggestion-btn" data-weather="sunny">🌞 Güneşli</button>
+            <button class="suggestion-btn" data-weather="rainy">🌧 Yağmurlu</button>
+            <button class="suggestion-btn" data-weather="cold">❄️ Soğuk</button>
+            <button class="suggestion-btn" data-weather="windy">💨 Rüzgarlı</button>
+            <button class="suggestion-btn" data-weather="mild">🌤 Ilık</button>
+            <button class="suggestion-btn" data-location="istanbul">📍 İstanbul</button>
+            <button class="suggestion-btn" data-location="ankara">📍 Ankara</button>
+            <button class="suggestion-btn" data-location="adana">📍 Adana</button>
+        </div>
+        <div id="chatbot-messages" style="flex:1;overflow-y:auto;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:10px;"></div>
+        <form id="chatbot-form" style="display:flex;padding:12px;background:#f5f5f5;gap:8px;border-top:1px solid #eee;">
+            <input id="chatbot-input" type="text" placeholder="Hava durumuna göre kombin sor..." style="flex:1;padding:12px;border-radius:8px;border:1px solid #ddd;font-size:1rem;" required />
+            <button type="submit" style="background:#4a90e2;color:#fff;border:none;border-radius:8px;padding:0 20px;font-size:1.1rem;cursor:pointer;transition:background 0.2s;">Gönder</button>
+        </form>
+    </div>
+
     <!-- Gerekli JavaScript -->
     <script defer src="assets/javascript/main.js"></script>
     <script defer src="assets/javascript/random_clothes.js"></script>
@@ -985,6 +1077,167 @@
     }
     // Sayfa yüklendiğinde kombin kartlarını getir
     window.addEventListener('DOMContentLoaded', renderDynamicKombinCards);
+
+    // Chatbot functionality
+    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotModal = document.getElementById('chatbot-modal');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotForm = document.getElementById('chatbot-form');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+    const suggestionBtns = document.querySelectorAll('.suggestion-btn');
+
+    // Weather-based questions and answers
+    const weatherResponses = {
+        sunny: [
+            "Güneşli bir gün için: Açık renkli, pamuklu bir tişört, şort ve güneş gözlüğü harika olur. Terletmeyen kumaşlar tercih etmelisin.",
+            "Sıcak havada rahat bir kombin için: Keten gömlek, pamuklu şort ve sandalet öneririm. Şapka takmayı unutma!",
+            "Güneşli bir gün için hem şık hem serin tutacak: İnce bir elbise veya bol kesimli bir üst, açık renk pantolon ve güneş gözlüğü kombinini deneyebilirsin."
+        ],
+        rainy: [
+            "Yağmurlu havada: Su geçirmez bir mont, kapüşonlu bir üst, koyu renk pantolon ve bot giymeni öneririm. Şemsiye de unutma!",
+            "Hem yağmurdan koruyan hem tarz duran bir kombin için: Trençkot, içine kazak, koyu renk pantolon ve su geçirmez botlar harika olur.",
+            "Yağmurlu havada: Kapüşonlu bir yağmurluk, içine kalın bir kazak, koyu renk pantolon ve bot kombinini deneyebilirsin."
+        ],
+        cold: [
+            "Soğuk havada seni sıcak tutacak: Kalın bir mont, yün kazak, termal içlik, kalın pantolon ve bot giymeni öneririm.",
+            "Karlı bir havada hem sıcak kalıp hem şık olmak için: Kaban, kalın kazak, atkı, bere, eldiven ve bot kombinini deneyebilirsin.",
+            "Soğukta kaban dışında: Termal içlik, kalın kazak, hırka, kalın pantolon ve bot giyebilirsin. Kat kat giyinmek önemli!"
+        ],
+        windy: [
+            "Rüzgarlı bir gün için: Rüzgar geçirmeyen bir ceket, içine kalın bir kazak, rahat pantolon ve bot öneririm.",
+            "Rüzgar çok ama sıcaklık fena değilse: Hafif bir rüzgarlık, uzun kollu tişört, pantolon ve spor ayakkabı iyi gider.",
+            "Rüzgarda uçuşmayacak hafif bir kombin için: Rüzgarlık, içine tişört, dar kesim pantolon ve spor ayakkabı deneyebilirsin."
+        ],
+        mild: [
+            "Ne sıcak ne soğuk havalarda: İnce bir hırka, tişört, pantolon ve spor ayakkabı harika bir kombin olur.",
+            "Hafif serin ama güneşli havada: Jean ceket, tişört, pantolon ve sneaker öneririm. Kat kat giyinmek avantajlı olur.",
+            "Bu havalarda en rahat kombin: İnce bir gömlek, pantolon ve rahat bir ayakkabı olacaktır. Yanına ince bir hırka alabilirsin."
+        ]
+    };
+
+    const locationResponses = {
+        istanbul: [
+            "İstanbul'da hava değişken olabilir, yanına ince bir mont almanı öneririm. Kat kat giyinmek her zaman avantajlıdır.",
+            "İstanbul'da yağmurlu günlerde trençkot ve bot iyi bir tercih. Şemsiye de unutma!",
+            "İstanbul'da sabah serin, öğlen sıcak olabiliyor; katmanlı kombinler seçebilirsin. Yanına ince bir hırka al."
+        ],
+        ankara: [
+            "Ankara'da 10 derecede: Kalın bir kazak, mont ve atkı kullanmanı öneririm. Bere ve eldiven de iyi olur.",
+            "Ankara'da sabahları soğuk olabiliyor, kat kat giyinmek faydalı. Termal içlik ve kalın kazak kullanabilirsin.",
+            "Ankara'da rüzgarlı havalarda bere ve eldiven kullanabilirsin. Kalın mont ve bot kombinini unutma!"
+        ],
+        adana: [
+            "Adana'da sıcak havalarda: İnce ve terletmeyen kıyafetler, şort, tişört ve sandalet öneririm.",
+            "Adana'da hafif bir kombin için: Pamuklu elbiseler ve sandalet çok rahat olur. Güneş gözlüğü takmayı unutma!",
+            "Adana'da sıcak günlerde: Açık renkli, nefes alabilen kumaşlar, şort ve tişört kombinini deneyebilirsin."
+        ]
+    };
+
+    // Toggle chatbot
+    chatbotToggle.addEventListener('click', () => {
+        chatbotModal.style.display = 'flex';
+        if (chatbotMessages.childElementCount === 0) {
+            addChatMessage('Merhaba! Ben hava durumuna göre kombin önerileri sunan moda danışmanınım. Hava durumunu belirterek veya yukarıdaki butonları kullanarak soru sorabilirsin.', 'bot');
+        }
+    });
+
+    chatbotClose.addEventListener('click', () => {
+        chatbotModal.style.display = 'none';
+    });
+
+    // Add message to chat
+    function addChatMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chatbot-msg-${type}`;
+        messageDiv.textContent = message;
+        chatbotMessages.appendChild(messageDiv);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    // Handle form submission
+    chatbotForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const userMessage = chatbotInput.value.trim();
+        if (!userMessage) return;
+
+        addChatMessage(userMessage, 'user');
+        chatbotInput.value = '';
+
+        // Simulate bot thinking
+        setTimeout(() => {
+            const botResponse = getBotResponse(userMessage.toLowerCase());
+            addChatMessage(botResponse, 'bot');
+        }, 600);
+    });
+
+    // Handle suggestion buttons
+    suggestionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const weather = btn.dataset.weather;
+            const location = btn.dataset.location;
+            let message = '';
+
+            if (weather) {
+                switch(weather) {
+                    case 'sunny': message = "Bugün hava çok güneşli, ne giymeliyim?"; break;
+                    case 'rainy': message = "Yağmur yağıyor, nasıl bir kombin tercih etmeliyim?"; break;
+                    case 'cold': message = "Bugün çok soğuk, beni sıcak tutacak kıyafet önerin var mı?"; break;
+                    case 'windy': message = "Rüzgarlı bir gün için nasıl giyinmeliyim?"; break;
+                    case 'mild': message = "Ne sıcak ne soğuk, böyle havalarda ne giymeliyim?"; break;
+                }
+            } else if (location) {
+                switch(location) {
+                    case 'istanbul': message = "İstanbul'da hava yağmurluymuş, ne giymeliyim?"; break;
+                    case 'ankara': message = "Ankara'da bugün 10 dereceymiş, nasıl bir kombin uygundur?"; break;
+                    case 'adana': message = "Adana sıcaktır şimdi, hafif bir kombin önerir misin?"; break;
+                }
+            }
+
+            if (message) {
+                chatbotInput.value = message;
+                chatbotForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+
+    // Get bot response based on user message
+    function getBotResponse(message) {
+        // Check for weather conditions
+        if (message.includes('güneş') || message.includes('sıcak')) {
+            return getRandomResponse(weatherResponses.sunny);
+        }
+        if (message.includes('yağmur')) {
+            return getRandomResponse(weatherResponses.rainy);
+        }
+        if (message.includes('soğuk') || message.includes('kar')) {
+            return getRandomResponse(weatherResponses.cold);
+        }
+        if (message.includes('rüzgar')) {
+            return getRandomResponse(weatherResponses.windy);
+        }
+        if (message.includes('ılık') || message.includes('serin')) {
+            return getRandomResponse(weatherResponses.mild);
+        }
+
+        // Check for locations
+        if (message.includes('istanbul')) {
+            return getRandomResponse(locationResponses.istanbul);
+        }
+        if (message.includes('ankara')) {
+            return getRandomResponse(locationResponses.ankara);
+        }
+        if (message.includes('adana')) {
+            return getRandomResponse(locationResponses.adana);
+        }
+
+        // Default response
+        return "Hava durumuna göre kombin önerisi almak için hava durumunu belirtebilir veya yukarıdaki butonları kullanabilirsin. Örneğin: 'Güneşli bir gün için ne giymeliyim?' veya 'İstanbul'da yağmurlu havada nasıl giyinmeliyim?'";
+    }
+
+    function getRandomResponse(responses) {
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
     </script>
 </body>
 

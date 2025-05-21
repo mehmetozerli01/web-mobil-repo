@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator, Modal, ImageSourcePropType } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator, Modal, ImageSourcePropType, Platform } from 'react-native';
 import useAuth from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useNavigation } from '@react-navigation/native';
 import cities from '../../assets/data/cities.json';
+import { getCategories, getCategory } from '../../services/webapi';
+import { Picker } from '@react-native-picker/picker';
 
 interface City {
   name: string;
@@ -32,8 +34,9 @@ interface ClothingItem {
   name: string;
   category: string;
   subcategory: string;
-  imagePath: ImageSourcePropType;
+  imagePath?: string; // Bu düzeltildi
 }
+
 
 interface WardrobeData {
   upperwear: ClothingItem[];
@@ -43,6 +46,7 @@ interface WardrobeData {
 }
 
 const apiKey = "e4802f53135adaf9fe32403d35b6a3ed";
+const apiBase = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -59,6 +63,15 @@ const ProfilePage = () => {
     footwear: [],
     accessories: []
   });
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [subcategories, setSubcategories] = useState<string[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [images, setImages] = useState<string[]>([]);
+  const [upperwearImages, setUpperwearImages] = useState<string[]>([]);
+  const [bottomwearImages, setBottomwearImages] = useState<string[]>([]);
+  const [footwearImages, setFootwearImages] = useState<string[]>([]);
+  const [accessoriesImages, setAccessoriesImages] = useState<string[]>([]);
 
   const fetchWeather = async (city: City) => {
     setWeatherLoading(true);
@@ -95,129 +108,84 @@ const ProfilePage = () => {
   };
 
   useEffect(() => {
-    // Load wardrobe data
+    // Load wardrobe data from web api
     const loadWardrobeData = async () => {
       try {
-        // Üst giyim verilerini yükle
-        const upperwearItems: ClothingItem[] = [
-          {
-            id: 'tshirt1',
-            name: 'Tişört',
-            category: 'upperwear',
-            subcategory: 'tshirt',
-            imagePath: require('../../../web/assets/data/clothes/upperwear/tshirt/upperwear_tshirt3967.png')
-          },
-          {
-            id: 'tshirt2',
-            name: 'Tişört',
-            category: 'upperwear',
-            subcategory: 'tshirt',
-            imagePath: require('../../../web/assets/data/clothes/upperwear/tshirt/upperwear_tshirt3963.png')
-          },
-          {
-            id: 'tshirt3',
-            name: 'Tişört',
-            category: 'upperwear',
-            subcategory: 'tshirt',
-            imagePath: require('../../../web/assets/data/clothes/upperwear/tshirt/upperwear_tshirt3960.png')
-          }
-        ];
-
-        // Alt giyim verilerini yükle
-        const bottomwearItems: ClothingItem[] = [
-          {
-            id: 'pants1',
-            name: 'Pantolon',
-            category: 'bottomwear',
-            subcategory: 'pants',
-            imagePath: require('../../../web/assets/data/clothes/bottomwear/pants/bottomwear_pants4621.png')
-          },
-          {
-            id: 'pants2',
-            name: 'Pantolon',
-            category: 'bottomwear',
-            subcategory: 'pants',
-            imagePath: require('../../../web/assets/data/clothes/bottomwear/pants/bottomwear_pants4609.png')
-          },
-          {
-            id: 'pants3',
-            name: 'Pantolon',
-            category: 'bottomwear',
-            subcategory: 'pants',
-            imagePath: require('../../../web/assets/data/clothes/bottomwear/pants/bottomwear_pants4598.png')
-          }
-        ];
-
-        // Ayakkabı verilerini yükle
-        const footwearItems: ClothingItem[] = [
-          {
-            id: 'sneakers1',
-            name: 'Spor Ayakkabı',
-            category: 'footwear',
-            subcategory: 'sneakers',
-            imagePath: require('../../../web/assets/data/clothes/footwear/sneakers/963.png')
-          },
-          {
-            id: 'sneakers2',
-            name: 'Spor Ayakkabı',
-            category: 'footwear',
-            subcategory: 'sneakers',
-            imagePath: require('../../../web/assets/data/clothes/footwear/sneakers/960.png')
-          },
-          {
-            id: 'sneakers3',
-            name: 'Spor Ayakkabı',
-            category: 'footwear',
-            subcategory: 'sneakers',
-            imagePath: require('../../../web/assets/data/clothes/footwear/sneakers/938.png')
-          }
-        ];
-
-        // Aksesuar verilerini yükle
-        const accessoriesItems: ClothingItem[] = [
-          {
-            id: 'hat1',
-            name: 'Şapka',
-            category: 'accessories',
-            subcategory: 'hat',
-            imagePath: require('../../../web/assets/data/clothes/accessories/hat/accessories_hat979.png')
-          },
-          {
-            id: 'hat2',
-            name: 'Şapka',
-            category: 'accessories',
-            subcategory: 'hat',
-            imagePath: require('../../../web/assets/data/clothes/accessories/hat/accessories_hat976.png')
-          },
-          {
-            id: 'bag1',
-            name: 'Çanta',
-            category: 'accessories',
-            subcategory: 'bag',
-            imagePath: require('../../../web/assets/data/clothes/accessories/bag/accessories_bag14205.png')
-          },
-          {
-            id: 'bag2',
-            name: 'Çanta',
-            category: 'accessories',
-            subcategory: 'bag',
-            imagePath: require('../../../web/assets/data/clothes/accessories/bag/accessories_bag14201.png')
-          }
-        ];
-
-        setWardrobeData({
-          upperwear: upperwearItems,
-          bottomwear: bottomwearItems,
-          footwear: footwearItems,
-          accessories: accessoriesItems
-        });
+        // Kategorileri çek
+        const categories: string[] = await getCategories();
+        const wardrobe: any = {
+          upperwear: [],
+          bottomwear: [],
+          footwear: [],
+          accessories: []
+        };
+        // Her kategori için ürünleri çek
+        for (const category of categories) {
+          const items = await getCategory(category);
+          wardrobe[category] = items;
+        }
+        setWardrobeData(wardrobe);
       } catch (error) {
-        console.error('Gardırop verileri yüklenirken hata oluştu:', error);
+        console.error('Gardırop verileri web apiden yüklenirken hata oluştu:', error);
       }
     };
-
     loadWardrobeData();
   }, []);
+
+  useEffect(() => {
+    fetch(`${apiBase}/categories`)
+      .then(res => res.json())
+      .then(setCategories)
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedCategory) {
+      setSubcategories([]);
+      setSelectedSubcategory('');
+      return;
+    }
+    fetch(`${apiBase}/categories/${selectedCategory}`)
+      .then(res => res.json())
+      .then(setSubcategories)
+      .catch(console.error);
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (!selectedCategory || !selectedSubcategory) {
+      setImages([]);
+      return;
+    }
+    fetch(`${apiBase}/categories/${selectedCategory}/${selectedSubcategory}`)
+      .then(res => res.json())
+      .then(setImages)
+      .catch(console.error);
+  }, [selectedCategory, selectedSubcategory]);
+
+  const handleCategoryImages = async (category: string) => {
+    try {
+      const res = await fetch(`${apiBase}/categories/${category}`);
+      const subcats: string[] = await res.json();
+      if (subcats.length === 0) {
+        updateImages(category, []);
+        return;
+      }
+      const randomSub = subcats[Math.floor(Math.random() * subcats.length)];
+      const imgRes = await fetch(`${apiBase}/categories/${category}/${randomSub}`);
+      const imgs: string[] = await imgRes.json();
+      updateImages(category, imgs);
+    } catch (err) {
+      updateImages(category, []);
+      console.error('Kategori random görsel hatası:', err);
+    }
+  };
+
+  const updateImages = (category: string, imgs: string[]) => {
+    if (category === 'upperwear') setUpperwearImages(imgs);
+    if (category === 'bottomwear') setBottomwearImages(imgs);
+    if (category === 'footwear') setFootwearImages(imgs);
+    if (category === 'accessories') setAccessoriesImages(imgs);
+  };
 
   if (!user) {
     return null;
@@ -226,72 +194,128 @@ const ProfilePage = () => {
   const renderWardrobeSection = () => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Kişisel Gardırobum</Text>
-      
+      {/* Galeri Alanı */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
+        {images.length === 0 ? (
+          <Text style={{ color: '#888', alignSelf: 'center', marginLeft: 10 }}>Görsel yok</Text>
+        ) : (
+          images.map((imgUrl, idx) => (
+            <Image
+              key={imgUrl + idx}
+              source={{ uri: apiBase + imgUrl }}
+              style={{ width: 100, height: 100, borderRadius: 10, marginRight: 10, borderWidth: 1, borderColor: '#ccc' }}
+              resizeMode="cover"
+            />
+          ))
+        )}
+      </ScrollView>
+      {/* Kategori ve Alt Kategori Seçimi */}
+      <View style={{ marginBottom: 10 }}>
+        <Text style={{ fontWeight: '600', marginBottom: 4 }}>Ana Kategori:</Text>
+        <Picker
+          selectedValue={selectedCategory}
+          onValueChange={setSelectedCategory}
+          style={{ backgroundColor: '#F8F9FA', borderRadius: 8 }}
+        >
+          <Picker.Item label="Seçin" value="" />
+          {categories.map(cat => (
+            <Picker.Item key={cat} label={cat} value={cat} />
+          ))}
+        </Picker>
+        <Text style={{ fontWeight: '600', marginBottom: 4, marginTop: 8 }}>Alt Kategori:</Text>
+        <Picker
+          selectedValue={selectedSubcategory}
+          onValueChange={setSelectedSubcategory}
+          style={{ backgroundColor: '#F8F9FA', borderRadius: 8 }}
+          enabled={!!selectedCategory}
+        >
+          <Picker.Item label="Seçin" value="" />
+          {subcategories.map(sub => (
+            <Picker.Item key={sub} label={sub} value={sub} />
+          ))}
+        </Picker>
+      </View>
       {/* Üst Giyim */}
       <View style={styles.wardrobeCategory}>
-        <Text style={styles.categoryTitle}>Üst Giyim</Text>
+        <TouchableOpacity onPress={() => handleCategoryImages('upperwear')}>
+          <Text style={styles.categoryTitle}>Üst Giyim</Text>
+        </TouchableOpacity>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-          {wardrobeData.upperwear.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+          {upperwearImages.length === 0 ? (
+            <Text style={{color: '#888'}}>Resim Yok</Text>
+          ) : (
+            upperwearImages.map((imgUrl, idx) => (
               <Image
-                source={item.imagePath}
+                key={imgUrl + idx}
+                source={{ uri: apiBase + imgUrl }}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
-              <Text style={styles.itemName}>{item.name}</Text>
-            </TouchableOpacity>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
 
       {/* Alt Giyim */}
       <View style={styles.wardrobeCategory}>
-        <Text style={styles.categoryTitle}>Alt Giyim</Text>
+        <TouchableOpacity onPress={() => handleCategoryImages('bottomwear')}>
+          <Text style={styles.categoryTitle}>Alt Giyim</Text>
+        </TouchableOpacity>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-          {wardrobeData.bottomwear.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+          {bottomwearImages.length === 0 ? (
+            <Text style={{color: '#888'}}>Resim Yok</Text>
+          ) : (
+            bottomwearImages.map((imgUrl, idx) => (
               <Image
-                source={item.imagePath}
+                key={imgUrl + idx}
+                source={{ uri: apiBase + imgUrl }}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
-              <Text style={styles.itemName}>{item.name}</Text>
-            </TouchableOpacity>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
 
       {/* Ayakkabı */}
       <View style={styles.wardrobeCategory}>
-        <Text style={styles.categoryTitle}>Ayakkabı</Text>
+        <TouchableOpacity onPress={() => handleCategoryImages('footwear')}>
+          <Text style={styles.categoryTitle}>Ayakkabı</Text>
+        </TouchableOpacity>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-          {wardrobeData.footwear.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+          {footwearImages.length === 0 ? (
+            <Text style={{color: '#888'}}>Resim Yok</Text>
+          ) : (
+            footwearImages.map((imgUrl, idx) => (
               <Image
-                source={item.imagePath}
+                key={imgUrl + idx}
+                source={{ uri: apiBase + imgUrl }}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
-              <Text style={styles.itemName}>{item.name}</Text>
-            </TouchableOpacity>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
 
       {/* Aksesuarlar */}
       <View style={styles.wardrobeCategory}>
-        <Text style={styles.categoryTitle}>Aksesuarlar</Text>
+        <TouchableOpacity onPress={() => handleCategoryImages('accessories')}>
+          <Text style={styles.categoryTitle}>Aksesuarlar</Text>
+        </TouchableOpacity>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
-          {wardrobeData.accessories.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.wardrobeItem}>
+          {accessoriesImages.length === 0 ? (
+            <Text style={{color: '#888'}}>Resim Yok</Text>
+          ) : (
+            accessoriesImages.map((imgUrl, idx) => (
               <Image
-                source={item.imagePath}
+                key={imgUrl + idx}
+                source={{ uri: apiBase + imgUrl }}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
-              <Text style={styles.itemName}>{item.name}</Text>
-            </TouchableOpacity>
-          ))}
+            ))
+          )}
         </ScrollView>
       </View>
 

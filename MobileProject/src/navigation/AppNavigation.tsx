@@ -34,7 +34,7 @@ const AppNavigation: React.FC = () => {
   else {
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='Welcome'>
+        <Stack.Navigator initialRouteName='Profile'>
           <Stack.Screen name='Welcome' component={WelcomePage} options={{ headerShown: false }} />
           <Stack.Screen name='Signup' component={SignupPage} options={{ headerShown: false }} />
           <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
