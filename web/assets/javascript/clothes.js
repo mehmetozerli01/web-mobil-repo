@@ -136,7 +136,7 @@ async function displayClothes() {
 
 // Kombin önerisi oluştur (her kategoriden random bir resim)
 async function generateOutfitSuggestion() {
-    const categories = ['upperwear', 'bottomwear', 'one-piece', 'footwear', 'accessories'];
+    const categories = ['upperwear', 'bottomwear', 'footwear', 'accessories'];
     const tempElement = document.querySelector('.temp-value');
     const humidityElement = document.querySelector('.detail-item:nth-child(2) span');
     const windElement = document.querySelector('.detail-item:nth-child(1) span');
@@ -146,14 +146,65 @@ async function generateOutfitSuggestion() {
     if (windElement) windSpeed = parseInt(windElement.textContent);
     const season = await predictSeason(temperature, humidity, windSpeed);
     let outfit = [];
-    for (const category of categories) {
-        const categoryPath = `assets/data/clustered_output/${season}/${category}`;
-        const images = await getAllImagesRecursive(categoryPath);
-        if (images.length > 0) {
-            const randomImage = images[Math.floor(Math.random() * images.length)];
-            outfit.push({imagePath: randomImage, name: getCategoryName(category)});
-        }
+    
+    // Üst giyim kategorisi için özel kontrol
+    const upperwearPath = `assets/data/clustered_output/${season}/upperwear`;
+    const upperwearImages = await getAllImagesRecursive(upperwearPath);
+    if (upperwearImages.length > 0) {
+        // Tişört veya sweatshirt seç
+        const tshirtImages = upperwearImages.filter(img => 
+            img.toLowerCase().includes('tshirt') || 
+            img.toLowerCase().includes('tisort') ||
+            img.toLowerCase().includes('sweatshirt') ||
+            img.toLowerCase().includes('sweat')
+        );
+        const randomUpperwear = tshirtImages.length > 0 
+            ? tshirtImages[Math.floor(Math.random() * tshirtImages.length)]
+            : upperwearImages[Math.floor(Math.random() * upperwearImages.length)];
+        outfit.push({imagePath: randomUpperwear, name: 'Tişört'});
     }
+
+    // Alt giyim kategorisi için özel kontrol
+    const bottomwearPath = `assets/data/clustered_output/${season}/bottomwear`;
+    const bottomwearImages = await getAllImagesRecursive(bottomwearPath);
+    if (bottomwearImages.length > 0) {
+        // Şort veya pantolon seç
+        const shortsImages = bottomwearImages.filter(img => 
+            img.toLowerCase().includes('shorts') || 
+            img.toLowerCase().includes('short') ||
+            img.toLowerCase().includes('sort')
+        );
+        const randomBottomwear = shortsImages.length > 0 
+            ? shortsImages[Math.floor(Math.random() * shortsImages.length)]
+            : bottomwearImages[Math.floor(Math.random() * bottomwearImages.length)];
+        outfit.push({imagePath: randomBottomwear, name: 'Şort'});
+    }
+
+    // Ayakkabı kategorisi için özel kontrol
+    const footwearPath = `assets/data/clustered_output/${season}/footwear`;
+    const footwearImages = await getAllImagesRecursive(footwearPath);
+    if (footwearImages.length > 0) {
+        // Spor ayakkabı veya günlük ayakkabı seç
+        const shoesImages = footwearImages.filter(img => 
+            img.toLowerCase().includes('shoes') || 
+            img.toLowerCase().includes('sneakers') ||
+            img.toLowerCase().includes('ayakkabi') ||
+            img.toLowerCase().includes('spor ayakkabı')
+        );
+        const randomFootwear = shoesImages.length > 0 
+            ? shoesImages[Math.floor(Math.random() * shoesImages.length)]
+            : footwearImages[Math.floor(Math.random() * footwearImages.length)];
+        outfit.push({imagePath: randomFootwear, name: 'Spor Ayakkabı'});
+    }
+
+    // Aksesuar kategorisi
+    const accessoriesPath = `assets/data/clustered_output/${season}/accessories`;
+    const accessoriesImages = await getAllImagesRecursive(accessoriesPath);
+    if (accessoriesImages.length > 0) {
+        const randomAccessory = accessoriesImages[Math.floor(Math.random() * accessoriesImages.length)];
+        outfit.push({imagePath: randomAccessory, name: 'Aksesuar'});
+    }
+
     return outfit;
 }
 

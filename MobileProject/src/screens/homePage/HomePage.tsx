@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import cities from '../../assets/data/cities.json';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AppNavigationPropsType } from '../../navigation/AppNavigationPropsType';
 
 const apiKey = "e4802f53135adaf9fe32403d35b6a3ed";
 
 const HomePage = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<AppNavigationPropsType>>();
   const [selectedCity, setSelectedCity] = useState<any>(cities[0]);
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -133,6 +137,14 @@ const HomePage = () => {
 
         {loading && <ActivityIndicator size="large" color={colorScheme.accent} style={styles.loader} />}
         {error && <Text style={[styles.error, { color: colorScheme.text }]}>{error}</Text>}
+
+        {/* Chat Butonu */}
+        <TouchableOpacity 
+          style={[styles.chatButton, { backgroundColor: colorScheme.accent }]}
+          onPress={() => navigation.navigate('Chat')}
+        >
+          <Text style={styles.chatButtonText}>AI Moda Danışmanı ile Konuş</Text>
+        </TouchableOpacity>
 
         {/* Kombin Önerisi Bölümü */}
         <View style={styles.outfitSection}>
@@ -364,6 +376,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
+  },
+  chatButton: {
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

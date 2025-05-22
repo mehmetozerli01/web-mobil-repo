@@ -15,7 +15,7 @@ const WelcomePage = () => {
     setError('');
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Profile');
+      navigation.navigate('Home');
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

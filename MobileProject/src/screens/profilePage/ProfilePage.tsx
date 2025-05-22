@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator, Modal, ImageSourcePropType, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator, Modal, ImageSourcePropType, Platform, Switch, TextInput, Alert } from 'react-native';
 import useAuth from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AppNavigationPropsType } from '../../navigation/AppNavigationPropsType';
 import cities from '../../assets/data/cities.json';
 import { getCategories, getCategory } from '../../services/webapi';
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface City {
   name: string;
@@ -50,7 +53,7 @@ const apiBase = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://127
 
 const ProfilePage = () => {
   const { user } = useAuth();
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NativeStackNavigationProp<AppNavigationPropsType>>();
   const [loading, setLoading] = useState(false);
   const [showAllCities, setShowAllCities] = useState(false);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
@@ -72,6 +75,24 @@ const ProfilePage = () => {
   const [bottomwearImages, setBottomwearImages] = useState<string[]>([]);
   const [footwearImages, setFootwearImages] = useState<string[]>([]);
   const [accessoriesImages, setAccessoriesImages] = useState<string[]>([]);
+  const [editProfileModal, setEditProfileModal] = useState(false);
+  const [changePasswordModal, setChangePasswordModal] = useState(false);
+  const [notificationModal, setNotificationModal] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [email] = useState(user?.email || '');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordRepeat, setNewPasswordRepeat] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [outfitSuggestion, setOutfitSuggestion] = useState<any[]>([]);
+  const [outfitLoading, setOutfitLoading] = useState(false);
+  const [outfitError, setOutfitError] = useState('');
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  const upperwearScrollRef = useRef<ScrollView>(null);
+  const bottomwearScrollRef = useRef<ScrollView>(null);
+  const footwearScrollRef = useRef<ScrollView>(null);
+  const accessoriesScrollRef = useRef<ScrollView>(null);
 
   const fetchWeather = async (city: City) => {
     setWeatherLoading(true);
@@ -158,8 +179,8 @@ const ProfilePage = () => {
     }
     fetch(`${apiBase}/categories/${selectedCategory}/${selectedSubcategory}`)
       .then(res => res.json())
-      .then(setImages)
-      .catch(console.error);
+      .then(data => setImages(Array.isArray(data) ? data : []))
+      .catch(() => setImages([]));
   }, [selectedCategory, selectedSubcategory]);
 
   const handleCategoryImages = async (category: string) => {
@@ -174,6 +195,22 @@ const ProfilePage = () => {
       const imgRes = await fetch(`${apiBase}/categories/${category}/${randomSub}`);
       const imgs: string[] = await imgRes.json();
       updateImages(category, imgs);
+      // Scroll işlemi: görseller state'e yazıldıktan sonra kısa bir gecikme ile scrollTo çağır
+      setTimeout(() => {
+        const scrollX = Math.max(0, (imgs.length - 1) * 120);
+        if (category === 'upperwear' && upperwearScrollRef.current) {
+          upperwearScrollRef.current.scrollTo({ x: scrollX, animated: true });
+        }
+        if (category === 'bottomwear' && bottomwearScrollRef.current) {
+          bottomwearScrollRef.current.scrollTo({ x: scrollX, animated: true });
+        }
+        if (category === 'footwear' && footwearScrollRef.current) {
+          footwearScrollRef.current.scrollTo({ x: scrollX, animated: true });
+        }
+        if (category === 'accessories' && accessoriesScrollRef.current) {
+          accessoriesScrollRef.current.scrollTo({ x: scrollX, animated: true });
+        }
+      }, 200);
     } catch (err) {
       updateImages(category, []);
       console.error('Kategori random görsel hatası:', err);
@@ -187,6 +224,57 @@ const ProfilePage = () => {
     if (category === 'accessories') setAccessoriesImages(imgs);
   };
 
+  // Tek random kombin önerisi çekme fonksiyonu
+  const fetchOutfitSuggestion = async () => {
+    setOutfitLoading(true);
+    setOutfitError('');
+    try {
+      const categories = await getCategories();
+      const selectedCategories = ['upperwear', 'bottomwear', 'footwear'];
+      const suggestion: any[] = [];
+      for (const cat of selectedCategories) {
+        if (categories.includes(cat)) {
+          const items = await getCategory(cat);
+          if (items && items.length > 0) {
+            // Rastgele bir ürün seç
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            suggestion.push(randomItem);
+          }
+        }
+      }
+      setOutfitSuggestion(suggestion);
+    } catch (err) {
+      setOutfitError('Kombin önerisi alınamadı.');
+    } finally {
+      setOutfitLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOutfitSuggestion();
+  }, []);
+
+  const toggleFavorite = async (imagePath: string) => {
+    let newFavs;
+    if (favorites.includes(imagePath)) {
+      newFavs = favorites.filter(fav => fav !== imagePath);
+    } else {
+      newFavs = [...favorites, imagePath];
+    }
+    setFavorites(newFavs);
+    await AsyncStorage.setItem('favorites', JSON.stringify(newFavs));
+    if (!favorites.includes(imagePath)) {
+      Alert.alert('Başarılı', 'Ürün favorilere eklendi!');
+      navigation.navigate('Favorite');
+    }
+  };
+
+  useEffect(() => {
+    AsyncStorage.getItem('favorites').then(data => {
+      if (data) setFavorites(JSON.parse(data));
+    });
+  }, []);
+
   if (!user) {
     return null;
   }
@@ -196,16 +284,23 @@ const ProfilePage = () => {
       <Text style={styles.sectionTitle}>Kişisel Gardırobum</Text>
       {/* Galeri Alanı */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
-        {images.length === 0 ? (
+        {Array.isArray(images) && images.length === 0 ? (
           <Text style={{ color: '#888', alignSelf: 'center', marginLeft: 10 }}>Görsel yok</Text>
         ) : (
-          images.map((imgUrl, idx) => (
-            <Image
-              key={imgUrl + idx}
-              source={{ uri: apiBase + imgUrl }}
-              style={{ width: 100, height: 100, borderRadius: 10, marginRight: 10, borderWidth: 1, borderColor: '#ccc' }}
-              resizeMode="cover"
-            />
+          Array.isArray(images) && images.map((imgUrl, idx) => (
+            <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+              <Image
+                source={{ uri: apiBase + imgUrl }}
+                style={styles.itemImage}
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                onPress={() => toggleFavorite(imgUrl)}
+                style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
+              >
+                <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+              </TouchableOpacity>
+            </View>
           ))
         )}
       </ScrollView>
@@ -240,17 +335,24 @@ const ProfilePage = () => {
         <TouchableOpacity onPress={() => handleCategoryImages('upperwear')}>
           <Text style={styles.categoryTitle}>Üst Giyim</Text>
         </TouchableOpacity>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+        <ScrollView ref={upperwearScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {upperwearImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
             upperwearImages.map((imgUrl, idx) => (
-              <Image
-                key={imgUrl + idx}
-                source={{ uri: apiBase + imgUrl }}
-                style={styles.itemImage}
-                resizeMode="cover"
-              />
+              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+                <Image
+                  source={{ uri: apiBase + imgUrl }}
+                  style={styles.itemImage}
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  onPress={() => toggleFavorite(imgUrl)}
+                  style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
+                >
+                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                </TouchableOpacity>
+              </View>
             ))
           )}
         </ScrollView>
@@ -261,17 +363,24 @@ const ProfilePage = () => {
         <TouchableOpacity onPress={() => handleCategoryImages('bottomwear')}>
           <Text style={styles.categoryTitle}>Alt Giyim</Text>
         </TouchableOpacity>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+        <ScrollView ref={bottomwearScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {bottomwearImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
             bottomwearImages.map((imgUrl, idx) => (
-              <Image
-                key={imgUrl + idx}
-                source={{ uri: apiBase + imgUrl }}
-                style={styles.itemImage}
-                resizeMode="cover"
-              />
+              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+                <Image
+                  source={{ uri: apiBase + imgUrl }}
+                  style={styles.itemImage}
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  onPress={() => toggleFavorite(imgUrl)}
+                  style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
+                >
+                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                </TouchableOpacity>
+              </View>
             ))
           )}
         </ScrollView>
@@ -282,17 +391,24 @@ const ProfilePage = () => {
         <TouchableOpacity onPress={() => handleCategoryImages('footwear')}>
           <Text style={styles.categoryTitle}>Ayakkabı</Text>
         </TouchableOpacity>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+        <ScrollView ref={footwearScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {footwearImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
             footwearImages.map((imgUrl, idx) => (
-              <Image
-                key={imgUrl + idx}
-                source={{ uri: apiBase + imgUrl }}
-                style={styles.itemImage}
-                resizeMode="cover"
-              />
+              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+                <Image
+                  source={{ uri: apiBase + imgUrl }}
+                  style={styles.itemImage}
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  onPress={() => toggleFavorite(imgUrl)}
+                  style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
+                >
+                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                </TouchableOpacity>
+              </View>
             ))
           )}
         </ScrollView>
@@ -303,17 +419,24 @@ const ProfilePage = () => {
         <TouchableOpacity onPress={() => handleCategoryImages('accessories')}>
           <Text style={styles.categoryTitle}>Aksesuarlar</Text>
         </TouchableOpacity>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
+        <ScrollView ref={accessoriesScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {accessoriesImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
             accessoriesImages.map((imgUrl, idx) => (
-              <Image
-                key={imgUrl + idx}
-                source={{ uri: apiBase + imgUrl }}
-                style={styles.itemImage}
-                resizeMode="cover"
-              />
+              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+                <Image
+                  source={{ uri: apiBase + imgUrl }}
+                  style={styles.itemImage}
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  onPress={() => toggleFavorite(imgUrl)}
+                  style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
+                >
+                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                </TouchableOpacity>
+              </View>
             ))
           )}
         </ScrollView>
@@ -341,6 +464,20 @@ const ProfilePage = () => {
         <Text style={styles.name}>{user.displayName || 'Kullanıcı'}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
+
+      {/* Favorilerim butonu */}
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#FF4B91',
+          padding: 12,
+          borderRadius: 10,
+          alignItems: 'center',
+          margin: 16,
+        }}
+        onPress={() => navigation.navigate('Favorite')}
+      >
+        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Favorilerim</Text>
+      </TouchableOpacity>
 
       {/* Favori Şehirler */}
       <View style={styles.section}>
@@ -469,7 +606,6 @@ const ProfilePage = () => {
           <View style={styles.outfitCard}>
             <View style={styles.outfitHeader}>
               <Text style={styles.outfitDate}>Bugün</Text>
-              <Text style={styles.outfitTemp}>23°C</Text>
             </View>
             <View style={styles.outfitItems}>
               <View style={styles.outfitItem}>
@@ -492,13 +628,13 @@ const ProfilePage = () => {
       {/* Hesap Ayarları */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Hesap Ayarları</Text>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => setEditProfileModal(true)}>
           <Text style={styles.menuItemText}>Profil Bilgilerini Düzenle</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => setChangePasswordModal(true)}>
           <Text style={styles.menuItemText}>Şifre Değiştir</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => setNotificationModal(true)}>
           <Text style={styles.menuItemText}>Bildirim Ayarları</Text>
         </TouchableOpacity>
       </View>
@@ -515,6 +651,94 @@ const ProfilePage = () => {
           <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
         )}
       </TouchableOpacity>
+
+      {/* Profil Bilgilerini Düzenle Modal */}
+      <Modal visible={editProfileModal} transparent animationType="slide" onRequestClose={() => setEditProfileModal(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Profil Bilgilerini Düzenle</Text>
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={displayName}
+              onChangeText={setDisplayName}
+              placeholder="Kullanıcı Adı"
+            />
+            <TextInput
+              style={[styles.input, { marginBottom: 20 }]}
+              value={email}
+              editable={false}
+              placeholder="E-posta"
+            />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <TouchableOpacity onPress={() => setEditProfileModal(false)} style={[styles.addButton, { backgroundColor: '#ccc', marginRight: 10 }]}> 
+                <Text style={{ color: '#333' }}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setEditProfileModal(false)} style={styles.addButton}>
+                <Text style={styles.addButtonText}>Kaydet</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Şifre Değiştir Modal */}
+      <Modal visible={changePasswordModal} transparent animationType="slide" onRequestClose={() => setChangePasswordModal(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Şifre Değiştir</Text>
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={oldPassword}
+              onChangeText={setOldPassword}
+              placeholder="Eski Şifre"
+              secureTextEntry
+            />
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder="Yeni Şifre"
+              secureTextEntry
+            />
+            <TextInput
+              style={[styles.input, { marginBottom: 20 }]}
+              value={newPasswordRepeat}
+              onChangeText={setNewPasswordRepeat}
+              placeholder="Yeni Şifre (Tekrar)"
+              secureTextEntry
+            />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <TouchableOpacity onPress={() => setChangePasswordModal(false)} style={[styles.addButton, { backgroundColor: '#ccc', marginRight: 10 }]}> 
+                <Text style={{ color: '#333' }}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setChangePasswordModal(false)} style={styles.addButton}>
+                <Text style={styles.addButtonText}>Kaydet</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Bildirim Ayarları Modal */}
+      <Modal visible={notificationModal} transparent animationType="slide" onRequestClose={() => setNotificationModal(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Bildirim Ayarları</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, marginRight: 10 }}>Bildirimler</Text>
+              <Switch value={notificationsEnabled} onValueChange={setNotificationsEnabled} />
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <TouchableOpacity onPress={() => setNotificationModal(false)} style={[styles.addButton, { backgroundColor: '#ccc', marginRight: 10 }]}> 
+                <Text style={{ color: '#333' }}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setNotificationModal(false)} style={styles.addButton}>
+                <Text style={styles.addButtonText}>Kaydet</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -632,11 +856,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1A1A1A',
-  },
-  outfitTemp: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FF4B91',
   },
   outfitItems: {
     flexDirection: 'row',
@@ -822,6 +1041,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  input: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#1A1A1A',
   },
 });
 

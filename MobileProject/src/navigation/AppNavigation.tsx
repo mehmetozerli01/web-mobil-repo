@@ -8,6 +8,8 @@ import ProfilePage from '../screens/profilePage/ProfilePage';
 import SignupPage from '../screens/signupPage/SignupPage';
 import useAuth from '../hooks/useAuth';
 import WelcomePage from '../screens/welcomePage/welcomePage';
+import FavoritePage from '../screens/favoritePage/favoritePage';
+import ChatScreen from '../screens/chatScreen/ChatScreen';
 
 
 const Stack = createNativeStackNavigator<AppNavigationPropsType>();
@@ -24,6 +26,8 @@ const AppNavigation: React.FC = () => {
           <Stack.Screen name='Profile' component={ProfilePage} options={{ headerShown: false }} />
           <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
           <Stack.Screen name='Welcome' component={WelcomePage} options={{ headerShown: false }} />
+          <Stack.Screen name='Favorite' component={FavoritePage} options={{ headerShown: false }} />
+          <Stack.Screen name='Chat' component={ChatScreen} options={{ headerShown: false }} />
 
 
         </Stack.Navigator>
@@ -34,12 +38,14 @@ const AppNavigation: React.FC = () => {
   else {
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='Profile'>
+        <Stack.Navigator initialRouteName='Welcome'>
           <Stack.Screen name='Welcome' component={WelcomePage} options={{ headerShown: false }} />
           <Stack.Screen name='Signup' component={SignupPage} options={{ headerShown: false }} />
           <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
+          <Stack.Screen name='Favorite' component={FavoritePage} options={{ headerShown: false }} />
 
           <Stack.Screen name='Profile' component={ProfilePage} options={{ headerShown: false }} />
+          <Stack.Screen name='Chat' component={ChatScreen} options={{ headerShown: false }} />
 
         </Stack.Navigator>
 
@@ -53,7 +59,6 @@ const AppNavigation: React.FC = () => {
         <Stack.Screen name='Welcome' component={WelcomePage} options={{ headerShown: false }} />
         <Stack.Screen name='Signup' component={SignupPage} options={{ headerShown: false }} />
         <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
-        {/* <Stack.Screen name='Profile' component={ProfilePage} /> */}
 
       </Stack.Navigator>
 
