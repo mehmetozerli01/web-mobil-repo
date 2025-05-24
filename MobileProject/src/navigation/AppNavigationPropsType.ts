@@ -5,4 +5,7 @@ export type AppNavigationPropsType = {
     Profile: undefined;
     Favorite: undefined;
     Chat: undefined;
+    Product: {
+        category: string;
+    };
 }

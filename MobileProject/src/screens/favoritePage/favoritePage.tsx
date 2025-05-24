@@ -6,53 +6,26 @@ const apiBase = 'http://127.0.0.1:8000'; // kendi API adresin
 const categories = ['upperwear', 'bottomwear', 'footwear', 'accessories'];
 
 const FavoritePage = () => {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [allImages, setAllImages] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     AsyncStorage.getItem('favorites').then(data => {
       if (data) setFavorites(JSON.parse(data));
+      setLoading(false);
     });
   }, []);
-
-  useEffect(() => {
-    const fetchAll = async () => {
-      let images: any[] = [];
-      for (const cat of categories) {
-        try {
-          const res = await fetch(`${apiBase}/categories/${cat}`);
-          const subcats = await res.json();
-          for (const sub of subcats) {
-            const imgRes = await fetch(`${apiBase}/categories/${cat}/${sub}`);
-            const imgs = await imgRes.json();
-            images = images.concat(imgs.map((img: any) => ({
-              ...img,
-              category: cat,
-              subcategory: sub
-            })));
-          }
-        } catch (e) {}
-      }
-      setAllImages(images);
-      setLoading(false);
-    };
-    fetchAll();
-  }, []);
-
-  const normalize = (path: string) => path.replace(/^\/?/, '');
-  const favoriteImages = allImages.filter(img => favorites.map(normalize).includes(normalize(img.imagePath)));
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Favorilerim</Text>
       {loading ? (
         <Text>Yükleniyor...</Text>
-      ) : favoriteImages.length === 0 ? (
+      ) : favorites.length === 0 ? (
         <Text>Henüz favori eklemediniz.</Text>
       ) : (
         <FlatList
-          data={favoriteImages}
+          data={favorites}
           keyExtractor={item => item.id}
           numColumns={2}
           renderItem={({ item }) => (

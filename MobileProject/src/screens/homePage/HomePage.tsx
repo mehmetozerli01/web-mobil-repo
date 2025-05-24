@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, TouchableWithoutFeedback, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import cities from '../../assets/data/cities.json';
 import { useNavigation } from '@react-navigation/native';
@@ -7,6 +7,48 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppNavigationPropsType } from '../../navigation/AppNavigationPropsType';
 
 const apiKey = "e4802f53135adaf9fe32403d35b6a3ed";
+const apiBase = "http://127.0.0.1:8000";
+const productApiBase = "https://fakestoreapi.com";
+
+// Her kutu için ana kategori ve alt kategori eşlemesi
+const outfitBoxes = [
+  { key: 'tshirt', label: 'Tişört', category: 'ust_giyim', subcategory: 'Tişört' },
+  { key: 'gomlek', label: 'Gömlek', category: 'ust_giyim', subcategory: 'Gömlek' },
+  { key: 'sweat', label: 'Sweat', category: 'ust_giyim', subcategory: 'Sweat' },
+  { key: 'mont', label: 'Mont', category: 'ust_giyim', subcategory: 'Mont' },
+  { key: 'sort', label: 'Şort', category: 'alt_giyim', subcategory: 'Şort' },
+  { key: 'pantolon', label: 'Pantolon', category: 'alt_giyim', subcategory: 'Pantolon' },
+  { key: 'spor_ayakkabi', label: 'Spor Ayakkabı', category: 'ayakkabi', subcategory: 'Spor Ayakkabı' },
+  { key: 'bot', label: 'Bot', category: 'ayakkabi', subcategory: 'Bot' },
+  { key: 'sapka', label: 'Şapka', category: 'aksesuar', subcategory: 'Şapka' },
+  { key: 'bere', label: 'Bere', category: 'aksesuar', subcategory: 'Bere' },
+  { key: 'atki', label: 'Atkı', category: 'aksesuar', subcategory: 'Atkı' },
+  { key: 'eldiven', label: 'Eldiven', category: 'aksesuar', subcategory: 'Eldiven' },
+  { key: 'kravat', label: 'Kravat', category: 'aksesuar', subcategory: 'Kravat' },
+  { key: 'gozluk', label: 'Gözlük', category: 'aksesuar', subcategory: 'Gözlük' },
+  { key: 'saat', label: 'Saat', category: 'aksesuar', subcategory: 'Saat' },
+];
+
+const placeholderImg = require('../../assets/images/placeholder.png');
+
+// Web API'deki kategorilere eşleme
+const boxToApiCategory: { [key: string]: string } = {
+  tshirt: 'men\'s clothing',
+  gomlek: 'men\'s clothing',
+  sweat: 'men\'s clothing',
+  mont: 'men\'s clothing',
+  sort: 'men\'s clothing',
+  pantolon: 'men\'s clothing',
+  spor_ayakkabi: 'men\'s clothing',
+  bot: 'men\'s clothing',
+  sapka: 'jewelery', // aksesuarlar için farklı kategori
+  bere: 'jewelery',
+  atki: 'jewelery',
+  eldiven: 'jewelery',
+  kravat: 'jewelery',
+  gozluk: 'jewelery',
+  saat: 'jewelery',
+};
 
 const HomePage = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AppNavigationPropsType>>();
@@ -15,6 +57,8 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPicker, setShowPicker] = useState(false);
+  const [boxImages, setBoxImages] = useState<{ [key: string]: { image: string, title: string } }>({});
+  const [imgLoading, setImgLoading] = useState(false);
 
   // Hava durumuna göre renk şeması
   const getColorScheme = (temp: number) => {
@@ -76,10 +120,33 @@ const HomePage = () => {
     }
   };
 
+  // Her kutu için web API'den ürün çek
+  const fetchBoxImages = async () => {
+    setImgLoading(true);
+    const newImages: { [key: string]: { image: string, title: string } } = {};
+    await Promise.all(
+      outfitBoxes.map(async (box) => {
+        try {
+          const apiCategory = boxToApiCategory[box.key] || 'men\'s clothing';
+          const res = await fetch(`${productApiBase}/products/category/${encodeURIComponent(apiCategory)}`);
+          if (!res.ok) return;
+          const products = await res.json();
+          if (products && products.length > 0) {
+            const randomProduct = products[Math.floor(Math.random() * products.length)];
+            newImages[box.key] = { image: randomProduct.image, title: randomProduct.title };
+          }
+        } catch {}
+      })
+    );
+    setBoxImages(newImages);
+    setImgLoading(false);
+  };
+
   useEffect(() => {
     if (selectedCity) {
       fetchWeather();
     }
+    fetchBoxImages();
   }, [selectedCity]);
 
   return (
@@ -138,6 +205,14 @@ const HomePage = () => {
         {loading && <ActivityIndicator size="large" color={colorScheme.accent} style={styles.loader} />}
         {error && <Text style={[styles.error, { color: colorScheme.text }]}>{error}</Text>}
 
+        {/* Profil Butonu */}
+        <TouchableOpacity 
+          style={[styles.profileButton, { backgroundColor: colorScheme.accent }]}
+          onPress={() => navigation.navigate('Profile')}
+        >
+          <Text style={styles.profileButtonText}>Profilim</Text>
+        </TouchableOpacity>
+
         {/* Chat Butonu */}
         <TouchableOpacity 
           style={[styles.chatButton, { backgroundColor: colorScheme.accent }]}
@@ -149,98 +224,85 @@ const HomePage = () => {
         {/* Kombin Önerisi Bölümü */}
         <View style={styles.outfitSection}>
           <Text style={[styles.sectionTitle, { color: colorScheme.text }]}>Bugünkü Kombin Önerin</Text>
-          
-          <View style={styles.outfitContainer}>
-            {/* Üst Giyim */}
-            <View style={styles.outfitCategory}>
-              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Üst Giyim</Text>
-              <View style={styles.categoryItems}>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Tişört</Text>
+          {imgLoading ? (
+            <ActivityIndicator size="large" color={colorScheme.accent} style={styles.loader} />
+          ) : (
+            <View style={styles.outfitContainer}>
+              {/* Üst Giyim */}
+              <View style={styles.outfitCategory}>
+                <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Üst Giyim</Text>
+                <View style={styles.categoryItems}>
+                  {outfitBoxes.filter(b => b.category === 'ust_giyim').map(box => (
+                    <View key={box.key} style={styles.outfitItem}>
+                      <Image
+                        source={boxImages[box.key]?.image ? { uri: boxImages[box.key].image } : placeholderImg}
+                        style={styles.placeholderImage}
+                        defaultSource={placeholderImg}
+                      />
+                      <Text style={[styles.outfitLabel, { color: colorScheme.text }]} numberOfLines={1}>
+                        {boxImages[box.key]?.title || box.label}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Gömlek</Text>
+              </View>
+              {/* Alt Giyim */}
+              <View style={styles.outfitCategory}>
+                <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Alt Giyim</Text>
+                <View style={styles.categoryItems}>
+                  {outfitBoxes.filter(b => b.category === 'alt_giyim').map(box => (
+                    <View key={box.key} style={styles.outfitItem}>
+                      <Image
+                        source={boxImages[box.key]?.image ? { uri: boxImages[box.key].image } : placeholderImg}
+                        style={styles.placeholderImage}
+                        defaultSource={placeholderImg}
+                      />
+                      <Text style={[styles.outfitLabel, { color: colorScheme.text }]} numberOfLines={1}>
+                        {boxImages[box.key]?.title || box.label}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Sweat</Text>
+              </View>
+              {/* Ayakkabı */}
+              <View style={styles.outfitCategory}>
+                <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Ayakkabı</Text>
+                <View style={styles.categoryItems}>
+                  {outfitBoxes.filter(b => b.category === 'ayakkabi').map(box => (
+                    <View key={box.key} style={styles.outfitItem}>
+                      <Image
+                        source={boxImages[box.key]?.image ? { uri: boxImages[box.key].image } : placeholderImg}
+                        style={styles.placeholderImage}
+                        defaultSource={placeholderImg}
+                      />
+                      <Text style={[styles.outfitLabel, { color: colorScheme.text }]} numberOfLines={1}>
+                        {boxImages[box.key]?.title || box.label}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.upperClothing }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Mont</Text>
+              </View>
+              {/* Aksesuarlar */}
+              <View style={styles.outfitCategory}>
+                <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Aksesuarlar</Text>
+                <View style={styles.categoryItems}>
+                  {outfitBoxes.filter(b => b.category === 'aksesuar').map(box => (
+                    <View key={box.key} style={styles.outfitItem}>
+                      <Image
+                        source={boxImages[box.key]?.image ? { uri: boxImages[box.key].image } : placeholderImg}
+                        style={[styles.placeholderImage, styles.accessory]}
+                        defaultSource={placeholderImg}
+                      />
+                      <Text style={[styles.outfitLabel, { color: colorScheme.text }]} numberOfLines={1}>
+                        {boxImages[box.key]?.title || box.label}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
               </View>
             </View>
-
-            {/* Alt Giyim */}
-            <View style={styles.outfitCategory}>
-              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Alt Giyim</Text>
-              <View style={styles.categoryItems}>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.lowerClothing }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Şort</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.lowerClothing }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Pantolon</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Ayakkabı */}
-            <View style={styles.outfitCategory}>
-              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Ayakkabı</Text>
-              <View style={styles.categoryItems}>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.footwear }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Spor Ayakkabı</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, { backgroundColor: colorScheme.footwear }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Bot</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Aksesuarlar */}
-            <View style={styles.outfitCategory}>
-              <Text style={[styles.categoryTitle, { color: colorScheme.text }]}>Aksesuarlar</Text>
-              <View style={styles.categoryItems}>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Şapka</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Bere</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Atkı</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Eldiven</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Kravat</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Gözlük</Text>
-                </View>
-                <View style={styles.outfitItem}>
-                  <View style={[styles.placeholderImage, styles.accessory, { backgroundColor: colorScheme.accessory }]} />
-                  <Text style={[styles.outfitLabel, { color: colorScheme.text }]}>Saat</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          <TouchableOpacity style={[styles.button, { backgroundColor: colorScheme.accent }]}>
+          )}
+          <TouchableOpacity style={[styles.button, { backgroundColor: colorScheme.accent }]} onPress={fetchBoxImages}>
             <Text style={styles.buttonText}>Başka Kombin Öner</Text>
           </TouchableOpacity>
         </View>
@@ -384,6 +446,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chatButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  profileButton: {
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  profileButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

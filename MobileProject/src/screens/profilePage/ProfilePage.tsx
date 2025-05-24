@@ -70,11 +70,11 @@ const ProfilePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [subcategories, setSubcategories] = useState<string[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
-  const [images, setImages] = useState<string[]>([]);
-  const [upperwearImages, setUpperwearImages] = useState<string[]>([]);
-  const [bottomwearImages, setBottomwearImages] = useState<string[]>([]);
-  const [footwearImages, setFootwearImages] = useState<string[]>([]);
-  const [accessoriesImages, setAccessoriesImages] = useState<string[]>([]);
+  const [images, setImages] = useState<ClothingItem[]>([]);
+  const [upperwearImages, setUpperwearImages] = useState<ClothingItem[]>([]);
+  const [bottomwearImages, setBottomwearImages] = useState<ClothingItem[]>([]);
+  const [footwearImages, setFootwearImages] = useState<ClothingItem[]>([]);
+  const [accessoriesImages, setAccessoriesImages] = useState<ClothingItem[]>([]);
   const [editProfileModal, setEditProfileModal] = useState(false);
   const [changePasswordModal, setChangePasswordModal] = useState(false);
   const [notificationModal, setNotificationModal] = useState(false);
@@ -179,9 +179,20 @@ const ProfilePage = () => {
     }
     fetch(`${apiBase}/categories/${selectedCategory}/${selectedSubcategory}`)
       .then(res => res.json())
-      .then(data => setImages(Array.isArray(data) ? data : []))
+      .then(data => setImagesFromPaths(Array.isArray(data) ? data : [], selectedCategory))
       .catch(() => setImages([]));
   }, [selectedCategory, selectedSubcategory]);
+
+  const setImagesFromPaths = (imgs: string[], category: string) => {
+    const items: ClothingItem[] = imgs.map((img, idx) => ({
+      id: img,
+      name: '',
+      category,
+      subcategory: '',
+      imagePath: img
+    }));
+    setImages(items);
+  };
 
   const handleCategoryImages = async (category: string) => {
     try {
@@ -218,10 +229,17 @@ const ProfilePage = () => {
   };
 
   const updateImages = (category: string, imgs: string[]) => {
-    if (category === 'upperwear') setUpperwearImages(imgs);
-    if (category === 'bottomwear') setBottomwearImages(imgs);
-    if (category === 'footwear') setFootwearImages(imgs);
-    if (category === 'accessories') setAccessoriesImages(imgs);
+    const items: ClothingItem[] = imgs.map((img, idx) => ({
+      id: img,
+      name: '',
+      category,
+      subcategory: '',
+      imagePath: img
+    }));
+    if (category === 'upperwear') setUpperwearImages(items);
+    if (category === 'bottomwear') setBottomwearImages(items);
+    if (category === 'footwear') setFootwearImages(items);
+    if (category === 'accessories') setAccessoriesImages(items);
   };
 
   // Tek random kombin önerisi çekme fonksiyonu
@@ -254,16 +272,21 @@ const ProfilePage = () => {
     fetchOutfitSuggestion();
   }, []);
 
-  const toggleFavorite = async (imagePath: string) => {
-    let newFavs;
-    if (favorites.includes(imagePath)) {
-      newFavs = favorites.filter(fav => fav !== imagePath);
-    } else {
-      newFavs = [...favorites, imagePath];
+  const toggleFavorite = async (item: ClothingItem) => {
+    let newFavs: ClothingItem[] = [];
+    const favData = await AsyncStorage.getItem('favorites');
+    if (favData) {
+      newFavs = JSON.parse(favData);
     }
-    setFavorites(newFavs);
+    const exists = newFavs.some(fav => fav.imagePath === item.imagePath);
+    if (exists) {
+      newFavs = newFavs.filter(fav => fav.imagePath !== item.imagePath);
+    } else {
+      newFavs = [...newFavs, item];
+    }
+    setFavorites(newFavs.map(fav => fav.imagePath ?? '').filter(Boolean));
     await AsyncStorage.setItem('favorites', JSON.stringify(newFavs));
-    if (!favorites.includes(imagePath)) {
+    if (!exists) {
       Alert.alert('Başarılı', 'Ürün favorilere eklendi!');
       navigation.navigate('Favorite');
     }
@@ -287,18 +310,18 @@ const ProfilePage = () => {
         {Array.isArray(images) && images.length === 0 ? (
           <Text style={{ color: '#888', alignSelf: 'center', marginLeft: 10 }}>Görsel yok</Text>
         ) : (
-          Array.isArray(images) && images.map((imgUrl, idx) => (
-            <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+          Array.isArray(images) && images.map((item, idx) => (
+            <View key={(item.imagePath || '') + idx} style={{ position: 'relative', marginRight: 10 }}>
               <Image
-                source={{ uri: apiBase + imgUrl }}
+                source={{ uri: apiBase + item.imagePath }}
                 style={styles.itemImage}
                 resizeMode="cover"
               />
               <TouchableOpacity
-                onPress={() => toggleFavorite(imgUrl)}
+                onPress={() => toggleFavorite(item)}
                 style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
               >
-                <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                <Text style={{ fontSize: 22, color: favorites.includes(item.imagePath || '') ? 'red' : '#bbb' }}>♥</Text>
               </TouchableOpacity>
             </View>
           ))
@@ -332,25 +355,29 @@ const ProfilePage = () => {
       </View>
       {/* Üst Giyim */}
       <View style={styles.wardrobeCategory}>
-        <TouchableOpacity onPress={() => handleCategoryImages('upperwear')}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Product', { category: 'upperwear' })}
+          style={styles.categoryButton}
+        >
           <Text style={styles.categoryTitle}>Üst Giyim</Text>
+          <Text style={styles.categoryArrow}>→</Text>
         </TouchableOpacity>
         <ScrollView ref={upperwearScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {upperwearImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
-            upperwearImages.map((imgUrl, idx) => (
-              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+            upperwearImages.map((item, idx) => (
+              <View key={(item.imagePath || '') + idx} style={{ position: 'relative', marginRight: 10 }}>
                 <Image
-                  source={{ uri: apiBase + imgUrl }}
+                  source={{ uri: apiBase + item.imagePath }}
                   style={styles.itemImage}
                   resizeMode="cover"
                 />
                 <TouchableOpacity
-                  onPress={() => toggleFavorite(imgUrl)}
+                  onPress={() => toggleFavorite(item)}
                   style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
                 >
-                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                  <Text style={{ fontSize: 22, color: favorites.includes(item.imagePath || '') ? 'red' : '#bbb' }}>♥</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -360,25 +387,29 @@ const ProfilePage = () => {
 
       {/* Alt Giyim */}
       <View style={styles.wardrobeCategory}>
-        <TouchableOpacity onPress={() => handleCategoryImages('bottomwear')}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Product', { category: 'bottomwear' })}
+          style={styles.categoryButton}
+        >
           <Text style={styles.categoryTitle}>Alt Giyim</Text>
+          <Text style={styles.categoryArrow}>→</Text>
         </TouchableOpacity>
         <ScrollView ref={bottomwearScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {bottomwearImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
-            bottomwearImages.map((imgUrl, idx) => (
-              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+            bottomwearImages.map((item, idx) => (
+              <View key={(item.imagePath || '') + idx} style={{ position: 'relative', marginRight: 10 }}>
                 <Image
-                  source={{ uri: apiBase + imgUrl }}
+                  source={{ uri: apiBase + item.imagePath }}
                   style={styles.itemImage}
                   resizeMode="cover"
                 />
                 <TouchableOpacity
-                  onPress={() => toggleFavorite(imgUrl)}
+                  onPress={() => toggleFavorite(item)}
                   style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
                 >
-                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                  <Text style={{ fontSize: 22, color: favorites.includes(item.imagePath || '') ? 'red' : '#bbb' }}>♥</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -388,25 +419,29 @@ const ProfilePage = () => {
 
       {/* Ayakkabı */}
       <View style={styles.wardrobeCategory}>
-        <TouchableOpacity onPress={() => handleCategoryImages('footwear')}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Product', { category: 'footwear' })}
+          style={styles.categoryButton}
+        >
           <Text style={styles.categoryTitle}>Ayakkabı</Text>
+          <Text style={styles.categoryArrow}>→</Text>
         </TouchableOpacity>
         <ScrollView ref={footwearScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {footwearImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
-            footwearImages.map((imgUrl, idx) => (
-              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+            footwearImages.map((item, idx) => (
+              <View key={(item.imagePath || '') + idx} style={{ position: 'relative', marginRight: 10 }}>
                 <Image
-                  source={{ uri: apiBase + imgUrl }}
+                  source={{ uri: apiBase + item.imagePath }}
                   style={styles.itemImage}
                   resizeMode="cover"
                 />
                 <TouchableOpacity
-                  onPress={() => toggleFavorite(imgUrl)}
+                  onPress={() => toggleFavorite(item)}
                   style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
                 >
-                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                  <Text style={{ fontSize: 22, color: favorites.includes(item.imagePath || '') ? 'red' : '#bbb' }}>♥</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -416,25 +451,29 @@ const ProfilePage = () => {
 
       {/* Aksesuarlar */}
       <View style={styles.wardrobeCategory}>
-        <TouchableOpacity onPress={() => handleCategoryImages('accessories')}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Product', { category: 'accessories' })}
+          style={styles.categoryButton}
+        >
           <Text style={styles.categoryTitle}>Aksesuarlar</Text>
+          <Text style={styles.categoryArrow}>→</Text>
         </TouchableOpacity>
         <ScrollView ref={accessoriesScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.wardrobeItems}>
           {accessoriesImages.length === 0 ? (
             <Text style={{color: '#888'}}>Resim Yok</Text>
           ) : (
-            accessoriesImages.map((imgUrl, idx) => (
-              <View key={imgUrl + idx} style={{ position: 'relative', marginRight: 10 }}>
+            accessoriesImages.map((item, idx) => (
+              <View key={(item.imagePath || '') + idx} style={{ position: 'relative', marginRight: 10 }}>
                 <Image
-                  source={{ uri: apiBase + imgUrl }}
+                  source={{ uri: apiBase + item.imagePath }}
                   style={styles.itemImage}
                   resizeMode="cover"
                 />
                 <TouchableOpacity
-                  onPress={() => toggleFavorite(imgUrl)}
+                  onPress={() => toggleFavorite(item)}
                   style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 12, padding: 2 }}
                 >
-                  <Text style={{ fontSize: 22, color: favorites.includes(imgUrl) ? 'red' : '#bbb' }}>♥</Text>
+                  <Text style={{ fontSize: 22, color: favorites.includes(item.imagePath || '') ? 'red' : '#bbb' }}>♥</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -454,7 +493,7 @@ const ProfilePage = () => {
       <View style={styles.header}>
         <View style={styles.profileImageContainer}>
           <Image
-            source={{ uri: user.photoURL || 'https://via.placeholder.com/120' }}
+            source={user.photoURL ? { uri: user.photoURL } : require('../../assets/images/user.jpg')}
             style={styles.profileImage}
           />
           <TouchableOpacity style={styles.editButton}>
@@ -473,10 +512,26 @@ const ProfilePage = () => {
           borderRadius: 10,
           alignItems: 'center',
           margin: 16,
+          marginBottom: 8,
         }}
         onPress={() => navigation.navigate('Favorite')}
       >
         <Text style={{ color: '#fff', fontWeight: 'bold' }}>Favorilerim</Text>
+      </TouchableOpacity>
+
+      {/* Ana Sayfa butonu */}
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#4B91FF',
+          padding: 12,
+          borderRadius: 10,
+          alignItems: 'center',
+          margin: 16,
+          marginTop: 0,
+        }}
+        onPress={() => navigation.navigate('Home')}
+      >
+        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Ana Sayfaya Git</Text>
       </TouchableOpacity>
 
       {/* Favori Şehirler */}
@@ -598,32 +653,6 @@ const ProfilePage = () => {
       </Modal>
 
       {renderWardrobeSection()}
-
-      {/* Son Kombin Önerileri */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Son Kombin Önerilerim</Text>
-        <View style={styles.outfitContainer}>
-          <View style={styles.outfitCard}>
-            <View style={styles.outfitHeader}>
-              <Text style={styles.outfitDate}>Bugün</Text>
-            </View>
-            <View style={styles.outfitItems}>
-              <View style={styles.outfitItem}>
-                <View style={[styles.itemImage, { backgroundColor: '#FFE5E5' }]} />
-                <Text style={styles.itemName}>Tişört</Text>
-              </View>
-              <View style={styles.outfitItem}>
-                <View style={[styles.itemImage, { backgroundColor: '#E5E5FF' }]} />
-                <Text style={styles.itemName}>Şort</Text>
-              </View>
-              <View style={styles.outfitItem}>
-                <View style={[styles.itemImage, { backgroundColor: '#E5FFE5' }]} />
-                <Text style={styles.itemName}>Spor Ayakkabı</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
 
       {/* Hesap Ayarları */}
       <View style={styles.section}>
@@ -1051,6 +1080,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     color: '#1A1A1A',
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  categoryArrow: {
+    fontSize: 20,
+    color: '#FF4B91',
+    fontWeight: 'bold',
   },
 });
 

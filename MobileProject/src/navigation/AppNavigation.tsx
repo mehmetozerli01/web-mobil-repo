@@ -10,11 +10,9 @@ import useAuth from '../hooks/useAuth';
 import WelcomePage from '../screens/welcomePage/welcomePage';
 import FavoritePage from '../screens/favoritePage/favoritePage';
 import ChatScreen from '../screens/chatScreen/ChatScreen';
-
+import ProductPage from '../screens/productPage/ProductPage';
 
 const Stack = createNativeStackNavigator<AppNavigationPropsType>();
-
-
 
 const AppNavigation: React.FC = () => {
   const { user } = useAuth();
@@ -22,16 +20,13 @@ const AppNavigation: React.FC = () => {
     return (
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Home'>
-
           <Stack.Screen name='Profile' component={ProfilePage} options={{ headerShown: false }} />
           <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
           <Stack.Screen name='Welcome' component={WelcomePage} options={{ headerShown: false }} />
           <Stack.Screen name='Favorite' component={FavoritePage} options={{ headerShown: false }} />
           <Stack.Screen name='Chat' component={ChatScreen} options={{ headerShown: false }} />
-
-
+          <Stack.Screen name='Product' component={ProductPage} options={{ headerShown: false }} />
         </Stack.Navigator>
-
       </NavigationContainer>
     )
   }
@@ -43,15 +38,12 @@ const AppNavigation: React.FC = () => {
           <Stack.Screen name='Signup' component={SignupPage} options={{ headerShown: false }} />
           <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
           <Stack.Screen name='Favorite' component={FavoritePage} options={{ headerShown: false }} />
-
           <Stack.Screen name='Profile' component={ProfilePage} options={{ headerShown: false }} />
           <Stack.Screen name='Chat' component={ChatScreen} options={{ headerShown: false }} />
-
+          <Stack.Screen name='Product' component={ProductPage} options={{ headerShown: false }} />
         </Stack.Navigator>
-
       </NavigationContainer>
     )
-
   }
   return (
     <NavigationContainer>
@@ -59,12 +51,9 @@ const AppNavigation: React.FC = () => {
         <Stack.Screen name='Welcome' component={WelcomePage} options={{ headerShown: false }} />
         <Stack.Screen name='Signup' component={SignupPage} options={{ headerShown: false }} />
         <Stack.Screen name='Home' component={HomePage} options={{ headerShown: false }} />
-
       </Stack.Navigator>
-
     </NavigationContainer>
   )
-
 }
 
 export default AppNavigation
